@@ -825,7 +825,7 @@ watch(selectedMaterial, async () => {
     );
     Object.keys(addOns.value).forEach(key => {
       if (addOns.value[key].length > 0) {
-        selectedAddons.value[textToKey(key)] = addOns.value[key][0];
+        selectedAddons.value[textToKey(key)] = addOns.value[key].find(addon => addon?.attribute_option === 'None');
       }
     });
   }
