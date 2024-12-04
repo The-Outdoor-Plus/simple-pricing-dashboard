@@ -37,7 +37,8 @@
               @complete="searchProducts" dropdown :virtual-scroller-options="{ itemSize: 45 }" size="medium"
               class="w-full" placeholder="Search for a product..." @option-select="onProductSelect()">
               <template #option="slotProps">
-                <span v-html="highlightMatch(slotProps.option.product)"></span>
+                <span
+                  v-html="highlightMatch(`${slotProps.option.product} (${slotProps.option.base_part_number})`)"></span>
               </template>
             </AutoComplete>
           </div>
@@ -643,7 +644,8 @@ const searchProducts = (event) => {
       const queryWords = event.query.toLowerCase().split(/\s+/);
       filteredProductsList.value = products.value.filter((product) => {
         const productName = product.product.toLowerCase();
-        return queryWords.every((word) => productName.includes(word));
+        const basePartNumber = product.base_part_number?.toLowerCase() || '';
+        return queryWords.every((word) => productName.includes(word) || basePartNumber.includes(word));
       })
     }
   }, 250);
