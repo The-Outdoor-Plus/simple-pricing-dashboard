@@ -148,7 +148,7 @@
         <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8">
           <template v-for="(card, i) in retailPriceCards" :key="i">
             <div :id="`flip-card-${card.id}`" class="flip-card hover:cursor-pointer">
-              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-12">
+              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-14">
                 <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${card.id}`)">
                   <template #title>
                     <div class="text-center">
@@ -177,9 +177,11 @@
                     <p class="text-lg text-center italic font-bold">
                       <!-- <FormulaDisplay :formula="card.formula" /> -->
                       {{
-                        calculatePercentage(calculatePrice(getTotalDealerPrice(), card.account),
-                          getTotalDealerPrice()) }}
+                        calculatePercentage(calculateRetailPrice(getTotalDealerPrice(), card.account),
+                          getTotalDealerPrice()) }} *
                     </p>
+                    <span class="text-sm">* Percentage for retail price is approximate and is not 100% accurate. It can
+                      vary by 1-3% </span>
                   </template>
                 </Card>
               </div>
