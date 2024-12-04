@@ -58,6 +58,7 @@ export function useProduct() {
         add_on_price,
         promo_code,
         discount,
+        images,
         promotion_details
       `,
       );

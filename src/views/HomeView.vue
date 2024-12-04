@@ -293,7 +293,8 @@
         </div>
         <div v-if="getPriceBreakdown.length">
           <div v-if="showPromotion">
-            <div class="text-lg text-red-500">There is a promotion ongoing that includes this product:</div>
+            <Divider />
+            <div class="text-lg text-red-500">This product is currently part of an ongoing promotion.</div>
             <div class="text-lg">Promo Code: <span class="text-xl text-green-600"> {{ selectedMaterial.promo_code }}
               </span>
             </div>
@@ -308,6 +309,8 @@
               @click="applyPromotion"></Button>
             <Button v-show="promotionApplied" label="Promotion Applied" severity="disabled" disabled class="mt-3"
               @click="applyPromotion"></Button>
+
+            <Divider />
           </div>
           <h3 class="text-2xl font-bold text-green-600 my-4">
             Price Breakdown
@@ -345,7 +348,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount">
                 {{ promotionApplied && slotProps.data?.discount ? formatPrice(slotProps.data.add_on_price * (1 -
                   slotProps.data.discount)) : formatPrice(slotProps.data.add_on_price) }}
@@ -388,10 +391,32 @@
       </div>
     </div>
 
+    <div v-if="selectedMaterial && currentImages.length > 0" class="w-full flex justify-center">
+      <Galleria :value="currentImages"
+        :key="currentImages.length ? `${selectedProduct?.product}-${selectedMaterial.attribute_option}-${currentImages[0].label}` : 0"
+        :responsiveOptions="responsiveOptions" :numVisible="5" :circular="true"
+        containerStyle="max-width: 600px; width: 100%" :showItemNavigators="true" :showItemNavigatorsOnHover="true"
+        class="w-full">
+        <template #item="slotProps">
+          <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+            style="width: auto; display: block; max-height: 340px;" class="mb-10" />
+        </template>
+        <template #thumbnail="slotProps">
+          <div class="px-3">
+            <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+              style="display: block; width: auto; max-height: 120px;" />
+          </div>
+        </template>
+        <template #caption="slotProps">
+          <div class="text-xl mb-2 font-bold">{{ slotProps.item.label }}</div>
+        </template>
+      </Galleria>
+    </div>
+
     <div v-if="selectedProduct && selectedProduct.product" class="self-start w-full flex items-center justify-between">
       <h2 class="self-start text-orange-900 text-lg font-semibold"> {{
         selectedProduct.product
-        }} Part Numbers
+      }} Part Numbers
       </h2>
     </div>
     <DataTable v-show="isVariationTableLoading" :value="Array.from(10)" class="w-full">
@@ -522,6 +547,16 @@ const currentDealerPrice = ref({
 const isVariationTableLoading = ref(false);
 const selectedAddons = ref({});
 const selectedAttributes = ref({});
+const responsiveOptions = ref([
+  {
+    breakpoint: '1300px',
+    numVisible: 4
+  },
+  {
+    breakpoint: '575px',
+    numVisible: 2
+  }
+]);
 
 const promotionApplied = ref(false);
 
@@ -828,6 +863,23 @@ const generateCSV = () => {
   }, 2000)
 }
 
+const extractImages = (imagesText) => {
+  let images = [];
+  if (imagesText) {
+    images = imagesText.split(',').map(image => {
+      const [label, imgUrl] = image.split(/:\s+/); // Split on the first ": " with optional whitespace
+      return { label: label.trim(), imgUrl: imgUrl.trim() }; // Trim to clean up spaces
+    });
+  }
+  return images;
+}
+
+const currentImages = computed(() => {
+  const productImages = extractImages(selectedProduct.value?.images);
+  const materialImages = extractImages(selectedMaterial.value?.images);
+  return [...productImages, ...materialImages];
+});
+
 onMounted(async () => {
   await loadProducts();
 });
@@ -862,6 +914,14 @@ const applyPromotion = () => {
 
 ::v-deep .p-card .p-card-content {
   margin-top: auto;
+}
+
+::v-deep .p-galleria-next-icon {
+  color: red !important;
+}
+
+::v-deep .p-galleria-prev-icon {
+  color: red !important;
 }
 
 .flip-card {
