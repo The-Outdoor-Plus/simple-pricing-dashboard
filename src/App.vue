@@ -1,12 +1,17 @@
 <script setup>
 import logoUrl from '@/assets/top_logo.svg';
 import { onMounted } from 'vue';
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 import { useUserStore } from './store/user';
-import { useRoute } from 'vue-router';
 
 const userStore = useUserStore();
+const router = useRouter();
 const route = useRoute();
+
+const signOut = async () => {
+  await userStore.logOut();
+  router.push('/login');
+}
 
 onMounted(async () => {
   if (!(userStore?.company && userStore.company?.name) && !!userStore.user) {
@@ -21,8 +26,14 @@ onMounted(async () => {
       <div class="w-full flex flex-col">
         <Toolbar v-if="route?.name !== 'Login'" style="padding: 1rem 1rem 1rem 1.5rem">
           <template #start>
-            <div class="flex items-center gap-2">
+            <div class=" flex items-center gap-2 ">
               <img :src="logoUrl" class="w-7/12 md:w-10/12">
+            </div>
+          </template>
+          <template #end>
+            <div class=" flex items-center gap-2 w-full">
+              <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
+                variant="text" severity="contrast" @click="signOut()"></Button>
             </div>
           </template>
         </Toolbar>

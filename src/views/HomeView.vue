@@ -81,12 +81,16 @@
             </div>
           </template>
         </div>
-
-
       </div>
       <div
         v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole) && selectedProduct && selectedProduct.product"
         class="col-span-5 w-full flex flex-col gap-y-6">
+        <div v-if="currentConfigurationSKU" class="flex items-center justify-center mb-4">
+          <h3 class="text-xl font-bold text-red-600 mr-2">SKU: </h3>
+          <span class="text-xl">
+            {{ currentConfigurationSKU }}
+          </span>
+        </div>
         <div class="">
           <h3 class="text-2xl text-blue-900 font-medium">Dealer Price: <span class="text-2xl text-black">
               {{ formatPrice(calculatePrice(getTotalDealerPrice(), "DEALER")) }}
@@ -161,7 +165,7 @@
                 <Card class="flip-card__back absolute top-0 right-0 left-0" @click="unflipCard(`flip-card-${card.id}`)">
                   <template #header>
                     <div class="w-full text-center pt-6 text-2xl font-semibold">
-                      {{ formatPrice(calculatePrice(getTotalDealerPrice(), card.account)) }}
+                      {{ formatPrice(calculateRetailPrice(getTotalDealerPrice(), card.account)) }}
                     </div>
                   </template>
                   <template #title>
