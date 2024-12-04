@@ -352,7 +352,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount">
                 {{ promotionApplied && slotProps.data?.discount ? formatPrice(slotProps.data.add_on_price * (1 -
                   slotProps.data.discount)) : formatPrice(slotProps.data.add_on_price) }}
@@ -420,7 +420,7 @@
     <div v-if="selectedProduct && selectedProduct.product" class="self-start w-full flex items-center justify-between">
       <h2 class="self-start text-orange-900 text-lg font-semibold"> {{
         selectedProduct.product
-        }} Part Numbers
+      }} Part Numbers
       </h2>
     </div>
     <DataTable v-show="isVariationTableLoading" :value="Array.from(10)" class="w-full">
@@ -845,7 +845,7 @@ const currentConfigurationSKU = computed(() => {
       }
     });
   }
-  return baseSKU;
+  return baseSKU.replace(/\{[^}]*\}/g, "").replace(/--+/g, "-").replace(/^-+|-+$/g, "");
 });
 
 const generateCSV = () => {
