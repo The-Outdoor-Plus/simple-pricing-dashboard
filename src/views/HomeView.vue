@@ -1,5 +1,9 @@
 <template>
   <div class="card flex flex-col justify-center items-center w-full gap-y-8">
+    <div class="w-full flex justify-end">
+      <Button type="button" label="Announcements" icon="pi pi-bell" :badge="`${announcementsLength}`"
+        badgeSeverity="danger" severity="contrast" outlined @click="router.push('/announcements')" />
+    </div>
     <div class="w-full flex flex-col lg:flex-row justify-between items-center self-start -mt-4">
       <div v-if="userStore?.currentUser?.first_name"
         class="text-2xl text-black order-2 lg:order-1 flex justify-center items-center">
@@ -348,7 +352,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount">
                 {{ promotionApplied && slotProps.data?.discount ? formatPrice(slotProps.data.add_on_price * (1 -
                   slotProps.data.discount)) : formatPrice(slotProps.data.add_on_price) }}
@@ -416,7 +420,7 @@
     <div v-if="selectedProduct && selectedProduct.product" class="self-start w-full flex items-center justify-between">
       <h2 class="self-start text-orange-900 text-lg font-semibold"> {{
         selectedProduct.product
-      }} Part Numbers
+        }} Part Numbers
       </h2>
     </div>
     <DataTable v-show="isVariationTableLoading" :value="Array.from(10)" class="w-full">
@@ -534,6 +538,7 @@ import { useProduct } from '@/composables/product';
 import { showRolePrice, calculatePrice, calculateRetailPrice, calculatePercentage, addSign } from '@/utils';
 import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
+import router from '@/router';
 
 const selectedProduct = ref();
 const filteredProductsList = ref();
@@ -613,11 +618,13 @@ const {
   materialAttributes,
   addOns,
   allAttributes,
+  announcementsLength,
   loadProducts,
   loadMaterialAttributes,
   loadAttributes,
   loadAllAddons,
   generateProductVariations,
+  retrieveAnnouncementsLength,
 } = useProduct();
 
 const userStore = useUserStore();
@@ -882,6 +889,7 @@ const currentImages = computed(() => {
 
 onMounted(async () => {
   await loadProducts();
+  await retrieveAnnouncementsLength();
 });
 
 const flipCard = (id) => {

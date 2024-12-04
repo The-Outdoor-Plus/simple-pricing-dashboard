@@ -29,6 +29,30 @@ export default [
           ],
         },
       },
+      {
+        path: 'announcements',
+        name: 'Announcements - The Outdoor Plus Product Configurator',
+        component: () =>
+          import(/* webpackchunkName: "announcements" */ '@/views/AnnouncementsView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          roles: [
+            'GROUP',
+            'LANDSCAPE',
+            'INTERNET',
+            'ECOMMERCE',
+            'USER',
+            'GUEST',
+            'DEALER',
+            'DISTRIBUTOR',
+            'MASTER_DISTRIBUTOR',
+            'MANAGER',
+            'ADMIN',
+            'SALES',
+          ],
+        },
+      },
     ],
   },
   {

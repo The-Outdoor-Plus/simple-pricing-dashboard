@@ -12,6 +12,8 @@ export function useProduct() {
   const attributes = ref({});
   const allAttributes = ref([]);
   const addOns = ref({});
+  const announcements = ref([]);
+  const announcementsLength = ref(0);
 
   const loadProducts = async () => {
     try {
@@ -358,16 +360,61 @@ export function useProduct() {
     return allCombinations;
   };
 
+  const retrieveAnnouncementsLength = async () => {
+    try {
+      appStore.setLoading(true);
+      let query = supabase.from('Announcements').select('id');
+      const { data, error } = await query;
+      if (error) throw error;
+      announcementsLength.value = data.length;
+    } catch (e) {
+      console.error(e);
+      toast.add({
+        severity: 'error',
+        summary: 'Error loading Announcements',
+        detail: e?.message || 'Something went wrong. Please contact TOP Support',
+        life: 3000,
+      });
+    } finally {
+      appStore.setLoading(false);
+    }
+  };
+
+  const loadAnnouncements = async () => {
+    try {
+      appStore.setLoading(true);
+      let query = supabase.from('Announcements').select('*');
+      const { data, error } = await query;
+      if (error) throw error;
+      announcements.value = data;
+    } catch (e) {
+      console.error(e);
+      toast.add({
+        severity: 'error',
+        summary: 'Error loading Announcements',
+        detail: e?.message || 'Something went wrong. Please contact TOP Support',
+        life: 3000,
+      });
+      addOns.value = {};
+    } finally {
+      appStore.setLoading(false);
+    }
+  };
+
   return {
     products,
     materialAttributes,
     attributes,
     allAttributes,
     addOns,
+    announcements,
+    announcementsLength,
     loadProducts,
     loadMaterialAttributes,
     loadAttributes,
     loadAllAddons,
     generateProductVariations,
+    loadAnnouncements,
+    retrieveAnnouncementsLength,
   };
 }
