@@ -27,7 +27,7 @@ onMounted(async () => {
         <Toolbar v-if="route?.name !== 'Login'" style="padding: 1rem 1rem 1rem 1.5rem">
           <template #start>
             <div class=" flex items-center gap-2 ">
-              <img :src="logoUrl" class="w-7/12 md:w-10/12">
+              <img :src="logoUrl" class="w-7/12 md:w-10/12 max-w-[320px]">
             </div>
           </template>
           <template #end>
