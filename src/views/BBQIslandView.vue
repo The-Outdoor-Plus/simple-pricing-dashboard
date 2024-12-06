@@ -282,7 +282,7 @@
       <!-- Order Summary -->
 
       <div
-        v-show="Number(currentStep) > 4"
+        v-show="Number(currentStep) > 5"
         class="w-full mt-8 py-6 px-4 lg:p-6 border rounded-lg bg-gray-50"
       >
         <div class="w-full flex mb-4">
