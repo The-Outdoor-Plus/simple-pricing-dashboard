@@ -56,8 +56,30 @@ export default [
       {
         path: 'bbq-island',
         name: 'BBQ Island Configurator',
-        component: () =>
-          import(/* webpackchunkName: "bbq-island" */ '@/views/BBQIslandView.vue'),
+        component: () => import(/* webpackchunkName: "bbq-island" */ '@/views/BBQIslandView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          roles: [
+            'GROUP',
+            'LANDSCAPE',
+            'INTERNET',
+            'ECOMMERCE',
+            'USER',
+            'GUEST',
+            'DEALER',
+            'DISTRIBUTOR',
+            'MASTER_DISTRIBUTOR',
+            'MANAGER',
+            'ADMIN',
+            'SALES',
+          ],
+        },
+      },
+      {
+        path: 'visual-bbq-island',
+        name: 'VIsual BBQ Island Configurator',
+        component: () => import(/* webpackchunkName: "bbq-island" */ '@/views/2DBBQIslandView.vue'),
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,

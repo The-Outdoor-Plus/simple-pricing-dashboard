@@ -8,6 +8,7 @@ import router from './router';
 import pinia from './store';
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
+import VueKonva from 'vue-konva';
 
 import ConfirmationService from 'primevue/confirmationservice';
 import DialogService from 'primevue/dialogservice';
@@ -17,6 +18,7 @@ const app = createApp(App);
 
 app.use(router);
 app.use(pinia);
+app.use(VueKonva);
 
 app.use(PrimeVue, {
   theme: {
