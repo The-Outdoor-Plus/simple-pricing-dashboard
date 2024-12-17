@@ -8,6 +8,7 @@ export default [
     files: ['**/*.{js,mjs,jsx,vue}'],
     env: {
       node: true,
+      'vue/setup-compiler-macros': true,
     },
   },
 

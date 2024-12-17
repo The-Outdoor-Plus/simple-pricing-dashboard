@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import { supabase } from '../supabase';
+import { useCartStore } from './cart'; // Assuming the cart store is in the same directory
 
 export const useUserStore = defineStore('user', {
   state: () => {
@@ -44,11 +45,16 @@ export const useUserStore = defineStore('user', {
       await this.setUser(user);
       await this.setSession(session);
     },
-    async logOut() {
-      await supabase.auth.signOut();
+    async logout() {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       this.user = null;
       this.session = null;
       this.token = null;
+      this.company = null;
+      // Reset cart on logout
+      const cartStore = useCartStore();
+      cartStore.resetCart();
     },
     async loadUserCompany() {
       if (this.user?.user_metadata?.company) {
@@ -76,6 +82,9 @@ export const useUserStore = defineStore('user', {
     },
     currentCompanyRole: (state) => {
       return state?.company?.role;
+    },
+    currentCompany: (state) => {
+      return state?.company;
     },
   },
 });

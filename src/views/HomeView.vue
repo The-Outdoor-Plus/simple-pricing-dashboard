@@ -1,16 +1,30 @@
 <template>
   <div class="card flex flex-col justify-center items-center w-full gap-y-8">
-    <div class="w-full flex justify-end">
-      <Button
-        type="button"
-        label="Announcements"
-        icon="pi pi-bell"
-        :badge="`${announcementsLength}`"
-        badgeSeverity="danger"
-        severity="contrast"
-        outlined
-        @click="router.push('/announcements')"
-      />
+    <div class="w-full flex justify-between items-center">
+      <div>
+        <Button
+          type="button"
+          label="Announcements"
+          icon="pi pi-bell"
+          :badge="`${announcementsLength}`"
+          badgeSeverity="danger"
+          severity="contrast"
+          outlined
+          @click="router.push('/announcements')"
+        />
+      </div>
+      <div class="flex gap-4">
+        <Button
+          type="button"
+          label="Cart"
+          icon="pi pi-shopping-cart"
+          :badge="cartStore.cartItemCount.toString()"
+          :disabled="cartStore.cartItemCount === 0"
+          severity="contrast"
+          outlined
+          @click="router.push('/cart')"
+        />
+      </div>
     </div>
     <div class="w-full flex flex-col lg:flex-row justify-between items-center self-start -mt-4">
       <div
@@ -396,6 +410,14 @@
             </Column>
           </DataTable>
         </div>
+        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
+          <Button
+            label="Add to Cart"
+            icon="pi pi-shopping-cart"
+            severity="success"
+            @click="addToCart"
+          />
+        </div>
       </div>
 
       <div
@@ -629,6 +651,14 @@
             </Column> -->
           </DataTable>
         </div>
+        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
+          <Button
+            label="Add to Cart"
+            icon="pi pi-shopping-cart"
+            severity="success"
+            @click="addToCart"
+          />
+        </div>
       </div>
     </div>
 
@@ -843,8 +873,11 @@ import {
 } from '@/utils';
 import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
-import router from '@/router';
+import { useCartStore } from '@/store/cart';
+import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
 
+const toast = useToast();
 const selectedProduct = ref();
 const filteredProductsList = ref();
 const eventQuery = ref('');
@@ -939,6 +972,8 @@ const {
 
 const userStore = useUserStore();
 const appStore = useAppStore();
+const cartStore = useCartStore();
+const router = useRouter();
 
 const currentProduct = computed(() => {
   return products.value.find((product) => product.id === selectedProduct.value?.id);
@@ -1214,6 +1249,24 @@ const currentConfigurationSKU = computed(() => {
     .replace(/^-+|-+$/g, '');
 });
 
+const currentConfigurationName = computed(() => {
+  let baseName = '';
+  if (selectedProduct.value?.product) {
+    baseName = baseName + selectedProduct.value.product;
+
+    if (selectedMaterial.value && selectedMaterial.value.attribute_option) {
+      baseName = baseName + ` - ${selectedMaterial.value.attribute_option}`;
+    }
+
+    Object.keys(selectedAttributes.value).forEach((key) => {
+      if (selectedAttributes.value[key] && selectedAttributes.value[key].attribute_option) {
+        baseName = baseName + ` - ${selectedAttributes.value[key].attribute_option}`;
+      }
+    });
+    return baseName;
+  }
+});
+
 const generateCSV = () => {
   appStore.setLoading(true);
   const rows = Object.values(productVariations.value).flat();
@@ -1280,7 +1333,7 @@ const showPromotion = computed(
       selectedMaterial.value.discount &&
       (userStore?.currentRole
         ? userStore.currentRole !== 'DISTRIBUTOR'
-        : userStore.currentCompanyRole !== 'DISTRIBUTOR') &&
+        : userStore?.currentCompanyRole !== 'DISTRIBUTOR') &&
       (userStore?.currentRole
         ? userStore.currentRole !== 'MASTER_DISTRIBUTOR'
         : userStore.currentCompanyRole !== 'MASTER_DISTRIBUTOR')
@@ -1290,22 +1343,52 @@ const showPromotion = computed(
 const applyPromotion = () => {
   promotionApplied.value = true;
 };
+
+const navigateToRFQ = () => {
+  router.push({
+    path: '/rfq',
+    query: {
+      items: JSON.stringify(getPriceBreakdown.value),
+    },
+  });
+};
+
+const addToCart = () => {
+  cartStore.addToCart(
+    getPriceBreakdown.value,
+    {
+      name: currentConfigurationName.value,
+      sku: currentConfigurationSKU.value,
+    },
+    userStore?.currentRole
+      ? userStore.currentRole
+      : userStore?.currentCompanyRole
+        ? userStore?.currentCompanyRole
+        : null,
+  );
+  toast.add({
+    severity: 'success',
+    summary: 'Added to Cart',
+    detail: 'Items have been added to your cart',
+    life: 3000,
+  });
+};
 </script>
 
 <style lang="scss" scoped>
-::v-deep .p-card .p-card-body {
+:deep(.p-card .p-card-body) {
   height: 100%;
 }
 
-::v-deep .p-card .p-card-content {
+:deep(.p-card .p-card-content) {
   margin-top: auto;
 }
 
-::v-deep .p-galleria-next-icon {
+:deep(.p-galleria-next-icon) {
   color: red !important;
 }
 
-::v-deep .p-galleria-prev-icon {
+:deep(.p-galleria-prev-icon) {
   color: red !important;
 }
 
