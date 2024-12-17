@@ -102,8 +102,7 @@ export default [
       {
         path: 'rfq',
         name: 'RFQ - The Outdoor Plus Product Configurator',
-        component: () =>
-          import(/* webpackchunkName: "rfq" */ '@/views/RFQView.vue'),
+        component: () => import(/* webpackchunkName: "rfq" */ '@/views/RFQView.vue'),
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
@@ -126,8 +125,7 @@ export default [
       {
         path: 'cart',
         name: 'Cart - The Outdoor Plus Product Configurator',
-        component: () =>
-          import(/* webpackchunkName: "cart" */ '@/views/CartView.vue'),
+        component: () => import(/* webpackchunkName: "cart" */ '@/views/CartView.vue'),
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
@@ -145,6 +143,16 @@ export default [
             'ADMIN',
             'SALES',
           ],
+        },
+      },
+      {
+        path: 'users',
+        name: 'Users - The Outdoor Plus Product Configurator',
+        component: () => import(/* webpackchunkName: "users" */ '@/views/UsersView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          roles: ['ADMIN', 'MANAGER'],
         },
       },
     ],
