@@ -1,10 +1,12 @@
 import { useAppStore } from '@/store/app';
 import { supabase } from '@/supabase';
 import { useRouter } from 'vue-router';
+import { useToast } from 'primevue';
 
 export function useRfq() {
   const appStore = useAppStore();
   const router = useRouter();
+  const toast = useToast();
 
   const getInitials = (sentence) => {
     return sentence
