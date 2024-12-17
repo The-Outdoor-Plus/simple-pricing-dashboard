@@ -1,5 +1,6 @@
 <template>
   <main class="py-10 px-6">
+    <SideBar />
     <div class="w-full container mx-auto min-h-screen relative">
       <router-view />
       <Toast></Toast>
@@ -16,7 +17,7 @@
 
 <script setup>
 import { useAppStore } from '@/store/app';
-
+import SideBar from '@/components/SideBar.vue';
 const appStore = useAppStore();
 
 </script>
