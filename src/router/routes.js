@@ -155,6 +155,16 @@ export default [
           roles: ['ADMIN', 'MANAGER'],
         },
       },
+      {
+        path: 'companies',
+        name: 'Companies - The Outdoor Plus Product Configurator',
+        component: () => import(/* webpackchunkName: "companies" */ '@/views/CompaniesView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          roles: ['ADMIN', 'MANAGER'],
+        },
+      },
     ],
   },
   {
