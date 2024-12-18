@@ -21,10 +21,26 @@
       </div>
       <div class="mb-4">
         <label for="company" class="block mb-1">Company</label>
-        <Select id="company" v-model="form.company_id" :options="companies" option-label="name" option-value="id"
-          placeholder="Select a Company" fluid />
-        <Message v-if="$form.company_id?.invalid" severity="error" size="small" variant="simple">{{
-          $form.company_id.error?.message }}</Message>
+        <div class="flex gap-2 items-center w-full">
+          <AutoComplete id="company" v-model="form.company" :suggestions="filteredCompanies" dropdown
+            option-label="name" option-value="id" placeholder="Select a Company" fluid @complete="searchCompanies"
+            class="w-full">
+            <template #option="{ option }">
+              <div>
+                <p v-html="highlightMatch(option.name)"></p>
+                <p class="text-sm text-gray-500 italic capitalize" v-html="highlightMatch(option.role.toLowerCase())">
+                </p>
+              </div>
+            </template>
+          </AutoComplete>
+          <i v-if="form.company && form.company.id"
+            class="pi pi-times p-2 rounded-full text-red-500 hover:bg-red-100/50 cursor-pointer transition-colors duration-300"
+            @click="form.company = null"></i>
+        </div>
+        <span v-if="form?.company?.name" class="text-sm font-bold italic">Selected: {{ form?.company?.name
+          }}</span>
+        <Message v-if="$form.company?.invalid" severity="error" size="small" variant="simple">{{
+          $form.company.error?.message }}</Message>
       </div>
       <div class="mb-4">
         <label for="role" class="block mb-1">Role</label>
@@ -89,12 +105,15 @@ const props = defineProps({
 const emit = defineEmits(['saved', 'cancel']);
 const toast = useToast();
 const roles = ref(['ADMIN', 'SALES', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR', 'INTERNET', 'LANDSCAPE', 'GROUP'])
+const eventQuery = ref('');
+const filteredCompanies = ref([]);
+const localCompaniesList = ref([]);
 const editUserPassword = ref(false);
 const initialValues = ref({
   first_name: '',
   last_name: '',
   email: '',
-  company_id: null,
+  company: null,
   role: '',
   avatar_url: '',
   password: '',
@@ -105,7 +124,7 @@ const form = ref({
   first_name: '',
   last_name: '',
   email: '',
-  company_id: null,
+  company: null,
   role: '',
   avatar_url: '',
   password: '',
@@ -117,7 +136,7 @@ const resolver = ref(zodResolver(
     first_name: z.string().min(1, { message: 'First Name is required.' }),
     last_name: z.string().optional(),
     email: z.string().min(1, { message: 'Email is required.' }).email({ message: 'Invalid email address' }),
-    company_id: z.string().min(1, { message: 'Company is required.' }),
+    company: z.string().min(1, { message: 'Company is required.' }),
     role: z.string().min(1, { message: 'Role is required.' }),
     avatar_url: z.string().optional(),
     password: z.string().min(6, { message: 'Minimum 6 characters' })
@@ -144,21 +163,62 @@ const resolver = ref(zodResolver(
     })
 ));
 
+watch(() => props.companies, (newCompanies) => {
+  localCompaniesList.value = [...newCompanies];
+}, { immediate: true, deep: true });
+
 // Watch for changes in the user prop to populate the form for editing
 watch(() => props.user, (newUser) => {
   if (props.isEdit && newUser) {
-    form.value = { ...newUser, company_id: newUser?.company?.id }; // Assuming company is an object
+    form.value = { ...newUser }; // Assuming company is an object
+    if (newUser?.company && newUser?.company?.id) {
+      form.value.company = newUser?.company;
+    }
   } else {
     form.value = {
       first_name: '',
       last_name: '',
       email: '',
-      company_id: null,
+      company: null,
       role: '',
       avatar_url: '',
     };
   }
 }, { immediate: true });
+
+watch(() => form.value.company, () => {
+  if (form.value.company && form.value.company.role) {
+    form.value.role = form.value.company.role;
+  }
+});
+
+const searchCompanies = (event) => {
+  eventQuery.value = event.query;
+  setTimeout(() => {
+    if (!event.query.trim().length) {
+      filteredCompanies.value = [...localCompaniesList.value];
+    } else {
+      const queryWords = event.query.toLowerCase().split(/\s+/);
+      filteredCompanies.value = localCompaniesList.value.filter((company) => {
+        const companyName = company.name.toLowerCase();
+        const role = company.role?.toLowerCase() || '';
+        return queryWords.every((word) => companyName.includes(word) || role.includes(word));
+      });
+    }
+  }, 250);
+}
+
+const highlightMatch = (text) => {
+  const queryWords = eventQuery.value.toLowerCase().split(/\s+/);
+  let highlightedText = text;
+  queryWords.forEach((word) => {
+    if (word.trim()) {
+      const regex = new RegExp(`(${word})`, 'gi');
+      highlightedText = highlightedText.replace(regex, '<b>$1</b>');
+    }
+  });
+  return highlightedText;
+}
 
 const handleSubmit = async ({ valid, values }) => {
   if (valid) {
@@ -170,7 +230,7 @@ const handleSubmit = async ({ valid, values }) => {
           first_name: form.value.first_name,
           last_name: form.value.last_name,
           email: form.value.email,
-          company: form.value.company_id,
+          company: form.value?.company?.id || null,
           role: form.value.role,
           avatar_url: form.value.avatar_url,
         }
@@ -201,8 +261,8 @@ const handleSubmit = async ({ valid, values }) => {
               first_name: form.value.first_name,
               last_name: form.value.last_name,
               email: form.value.email,
-              company: form.value.company_id,
               role: form.value.role,
+              company: form.value?.company?.id || null,
               avatar_url: form.value.avatar_url,
               password: form.value.password,
             }

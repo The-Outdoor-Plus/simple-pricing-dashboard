@@ -30,9 +30,18 @@
       <Column style="min-width: 20rem" field="email" header="Email" />
       <Column style="min-width: 15rem" field="company.name" header="Company" :show-filter-menu="false">
         <template #filter="{ filterModel, filterCallback }">
-          <Select v-model="filterModel.value" @change="updateFilters(filterCallback)" :options="companies"
-            option-label="name" option-value="id" placeholder="Filter by Company" style="min-width: 15rem"
-            :show-clear="true" />
+          <AutoComplete v-model="filterModel.value" dropdown @change="updateFilters(filterCallback)"
+            :suggestions="filteredCompanies" option-label="name" option-value="id" placeholder="Filter by Company"
+            style="min-width: 15rem" :show-clear="true" @complete="searchCompanies">
+            <template #option="slotProps">
+              <div>
+                <p v-html="highlightMatch(slotProps.option.name)"></p>
+                <p class="text-sm text-gray-500 italic capitalize"
+                  v-html="highlightMatch(slotProps.option.role.toLowerCase())">
+                </p>
+              </div>
+            </template>
+          </AutoComplete>
         </template>
       </Column>
       <Column style="min-width: 10rem" field="role" header="Role" />
@@ -92,10 +101,17 @@ const props = defineProps({
 });
 
 const userStore = useUserStore();
-const emit = defineEmits(['update:filters', 'page']);
+const emit = defineEmits(['update:filters', 'page', 'edit-user']);
 const localFilters = ref({});
 const deleteDialogVisible = ref(false);
 const userToDelete = ref(null);
+const eventQuery = ref('');
+const filteredCompanies = ref([]);
+const localCompaniesList = ref([]);
+
+watch(() => props.companies, (newCompanies) => {
+  localCompaniesList.value = [...newCompanies];
+}, { immediate: true, deep: true });
 
 // Initialize local filters
 watch(() => props.filters, (newFilters) => {
@@ -111,11 +127,6 @@ const updateFilters = (callback) => {
 const emitFilterChange = () => {
   emit('update:filters', { ...localFilters.value });
 };
-
-const test = (evt) => {
-  console.log('test');
-  console.log(evt);
-}
 
 // Method to handle pagination
 const onPage = (event) => {
@@ -135,6 +146,34 @@ const confirmDelete = (user) => {
 
 const userCanBeDeleted = (user) => {
   return userStore.currentUser.id !== user.id && user.email !== 'rodrigo@theoutdoorplus.com';
+}
+
+const searchCompanies = (event) => {
+  eventQuery.value = event.query;
+  setTimeout(() => {
+    if (!event.query.trim().length) {
+      filteredCompanies.value = [...localCompaniesList.value];
+    } else {
+      const queryWords = event.query.toLowerCase().split(/\s+/);
+      filteredCompanies.value = localCompaniesList.value.filter((company) => {
+        const companyName = company.name.toLowerCase();
+        const role = company.role?.toLowerCase() || '';
+        return queryWords.every((word) => companyName.includes(word) || role.includes(word));
+      });
+    }
+  }, 250);
+}
+
+const highlightMatch = (text) => {
+  const queryWords = eventQuery.value.toLowerCase().split(/\s+/);
+  let highlightedText = text;
+  queryWords.forEach((word) => {
+    if (word.trim()) {
+      const regex = new RegExp(`(${word})`, 'gi');
+      highlightedText = highlightedText.replace(regex, '<b>$1</b>');
+    }
+  });
+  return highlightedText;
 }
 
 // Delete user function

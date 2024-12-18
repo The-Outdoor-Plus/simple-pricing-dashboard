@@ -40,7 +40,7 @@ const filters = ref({
 // Fetch users with filters and pagination
 const fetchUsers = async (page = 0, rowsPerPage = 10) => {
   try {
-    const query = supabase
+    let query = supabase
       .from('users')
       .select(`
         id,
@@ -48,15 +48,31 @@ const fetchUsers = async (page = 0, rowsPerPage = 10) => {
         last_name,
         email,
         avatar_url,
-        company!inner(
+        company(
           id,
-          name
+          name,
+          role
         ),
         role
       `, { count: 'exact' });
 
-    if (filters.value['company.name'].value) {
-      query.eq('company.id', filters.value['company.name'].value);
+    if (filters.value['company.name'].value && filters.value['company.name'].value.id) {
+      query = supabase
+        .from('users')
+        .select(`
+        id,
+        first_name,
+        last_name,
+        email,
+        avatar_url,
+        company!inner(
+          id,
+          name,
+          role
+        ),
+        role
+      `, { count: 'exact' })
+        .eq('company.id', filters.value['company.name'].value.id);
     }
 
     if (filters.value['first_name'].value && (filters.value['first_name'].value.length > 2 || filters.value['first_name'].value.length === 0)) {
@@ -75,7 +91,7 @@ const fetchUsers = async (page = 0, rowsPerPage = 10) => {
 // Fetch companies for the form
 const fetchCompanies = async () => {
   try {
-    const { data, error } = await supabase.from('Company').select('id, name');
+    const { data, error } = await supabase.from('Company').select('id, name, role');
     if (error) throw error;
     companies.value = data;
   } catch (error) {
