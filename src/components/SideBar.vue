@@ -10,36 +10,38 @@
         </div>
         <div class="overflow-y-auto">
           <ul class="list-none p-2 m-0 overflow-x-hidden text-sm">
-            <li>
-              <a @click="navigateTo('/')" v-ripple
-                class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple">
-                <i class="pi pi-home mr-2"></i>
-                <span class="font-medium">Home</span>
-              </a>
-            </li>
-            <li class="mt-6">
-              <div v-ripple v-styleclass="{
-                selector: '@next',
-                enterFromClass: 'hidden',
-                enterActiveClass: 'animate-slidedown',
-                leaveToClass: 'hidden',
-                leaveActiveClass: 'animate-slideup'
-              }"
-                class="px-4 py-2 flex items-center justify-between text-surface-500 hover:text-black cursor-pointer p-ripple transition-colors duration-300">
-                <span class="font-medium">Admin Menu</span>
-                <i class="pi pi-chevron-down"></i>
-              </div>
-              <ul class="list-none p-0 m-0 overflow-hidden text-sm">
-                <li>
-                  <a v-ripple
-                    class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple"
-                    @click="navigateTo('/users')">
-                    <i class="pi pi-users mr-2"></i>
-                    <span class="font-medium">Users</span>
-                  </a>
-                </li>
-              </ul>
-            </li>
+            <template v-for="(menuItem, index) in menuItems" :key="index">
+              <li class="first:mt-0 mt-6">
+                <a v-if="!menuItem.children.length" @click="navigateTo(menuItem.path)" v-ripple
+                  class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple">
+                  <i :class="menuItem.icon" class="mr-2"></i>
+                  <span class="font-medium">{{ menuItem.name }}</span>
+                </a>
+                <template v-if="menuItem.children.length">
+                  <div v-ripple v-styleclass="{
+                    selector: '@next',
+                    enterFromClass: 'hidden',
+                    enterActiveClass: 'animate-slidedown',
+                    leaveToClass: 'hidden',
+                    leaveActiveClass: 'animate-slideup'
+                  }"
+                    class="px-4 py-2 flex items-center justify-between text-surface-500 hover:text-black cursor-pointer p-ripple transition-colors duration-300">
+                    <span class="font-medium">{{ menuItem.name }}</span>
+                    <i class="pi pi-chevron-down"></i>
+                  </div>
+                  <ul class="list-none p-0 m-0 overflow-hidden text-sm">
+                    <li v-for="(item, index) in menuItem.children" :key="`${menuItem.name}-${index}`">
+                      <a v-ripple
+                        class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple"
+                        @click="navigateTo(item.path)">
+                        <i :class="item.icon" class="mr-2"></i>
+                        <span class="font-medium">{{ item.name }}</span>
+                      </a>
+                    </li>
+                  </ul>
+                </template>
+              </li>
+            </template>
           </ul>
         </div>
         <div class="mt-auto">
@@ -60,10 +62,39 @@
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 
 const router = useRouter();
 const appStore = useAppStore();
 const userStore = useUserStore();
+
+const menuItems = ref([
+  {
+    name: 'Home',
+    icon: 'pi pi-home',
+    path: '/',
+    children: [],
+    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+  },
+  {
+    name: 'Admin Menu',
+    roles: ['ADMIN', 'MANAGER'],
+    children: [
+      {
+        name: 'Users',
+        icon: 'pi pi-users',
+        path: '/users',
+        roles: ['ADMIN', 'MANAGER'],
+      },
+      {
+        name: 'Companies',
+        icon: 'pi pi-building',
+        path: '/companies',
+        roles: ['ADMIN', 'MANAGER'],
+      },
+    ],
+  },
+]);
 
 const close = (closeCallback) => {
   appStore.closeSidebar();
