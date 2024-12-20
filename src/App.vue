@@ -34,9 +34,9 @@ onMounted(async () => {
         <Toolbar v-if="route?.name !== 'Login'" style="padding: 1rem 1rem 1rem 1.5rem">
           <template #start>
             <div class="flex items-center gap-2">
-              <Button v-if="userStore.isUserAuthenticated && userStore.currentRole === 'ADMIN'" icon="pi pi-bars"
-                variant="text" severity="contrast" @click="appStore.openSidebar()" />
-              <img :src="logoUrl" class="w-7/12 md:w-10/12 max-w-[320px]" />
+              <Button v-if="userStore.isUserAuthenticated" icon="pi pi-bars" variant="text" severity="contrast"
+                @click="appStore.openSidebar()" />
+              <img :src="logoUrl" class="w-7/12 md:w-10/12 max-w-[320px] cursor-pointer" @click="router.push('/')" />
             </div>
           </template>
           <template #end>
