@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4">
+  <div>
     <DataTable v-model:filters="localFilters" :value="users" class="w-full" :paginator="true" :rows="rows"
       :totalRecords="totalRecords" :lazy="true" @page="onPage" dataKey="id" style="width: 100%"
       table-style="min-width: 100%;"
@@ -13,11 +13,7 @@
       </template>
       <Column style="min-width: 12rem" field="id" header="ID" :show-filter-menu="false">
         <template #body="slotProps">
-          <div class="max-w-[175px]">
-            <div class="overflow-hidden whitespace-nowrap text-ellipsis">
-              {{ slotProps.data.id }}
-            </div>
-          </div>
+          {{ slotProps.data.id }}
         </template>
       </Column>
       <Column style="min-width: 12rem" field="first_name" header="First Name" :show-filter-menu="false">
