@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4">
+  <div>
     <DataTable v-model:filters="localFilters" :value="companies" class="w-full" :paginator="true" :rows="rows"
       :totalRecords="totalRecords" :lazy="true" @page="onPage" dataKey="id" style="width: 100%"
       table-style="min-width: 100%;"
