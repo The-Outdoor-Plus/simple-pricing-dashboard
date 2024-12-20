@@ -143,10 +143,6 @@ import { useRfq } from '@/composables/rfq';
 
 
 const props = defineProps({
-  companyLogo: {
-    type: String,
-    default: '',
-  },
   rfqNumber: {
     type: String,
     required: true,

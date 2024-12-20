@@ -69,9 +69,8 @@
       </div>
 
       <div class="preview-container">
-        <RFQPreview :company-logo="userStore?.currentCompany?.logo" :rfq-number="rfqNumber" :company-info="companyInfo"
-          :shipping-info="shippingInfo" :purchase-order="purchaseOrder" :items="rfqItems"
-          :additional-notes="additionalNotes" />
+        <RFQPreview :rfq-number="rfqNumber" :company-info="companyInfo" :shipping-info="shippingInfo"
+          :purchase-order="purchaseOrder" :items="rfqItems" :additional-notes="additionalNotes" />
       </div>
     </div>
   </div>
@@ -84,11 +83,14 @@ import { useRoute, useRouter } from 'vue-router';
 import RFQPreview from '@/components/RFQPreview.vue';
 import html2pdf from 'html2pdf.js';
 import { useRfq } from '@/composables/rfq';
+import { useToast } from 'primevue/usetoast';
+import { supabase } from '@/supabase';
 
 const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
 const { getRfqNumber } = useRfq();
+const toast = useToast();
 
 // Form Data
 const purchaseOrder = ref('');
@@ -240,9 +242,45 @@ const generatePDF = async () => {
   }
 };
 
-const sendRFQ = () => {
-  // TODO: Implement RFQ sending
-  console.log('Sending RFQ...');
+const sendRFQ = async () => {
+  try {
+    const rfqData = {
+      company_information: companyInfo.value,
+      ship_to_information: shippingInfo.value,
+      purchase_order_number: purchaseOrder.value,
+      items: rfqItems.value,
+      additional_notes: additionalNotes.value,
+      company_id: userStore.company?.id,
+      user_id: userStore.user?.id,
+      rfq_number: rfqNumber.value,
+      status: 'RFQ Sent'
+    };
+
+    const { error } = await supabase
+      .from('rfq')
+      .insert(rfqData)
+
+    if (error) throw error;
+
+    // Show success message
+    toast.add({
+      severity: 'success',
+      summary: 'RFQ Sent',
+      detail: `RFQ ${rfqNumber.value} has been created successfully`,
+      life: 3000
+    });
+
+    // Redirect to RFQ list
+    router.push('/rfqs');
+  } catch (error) {
+    console.error('Error sending RFQ:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to send RFQ. Please try again.',
+      life: 3000
+    });
+  }
 };
 </script>
 
