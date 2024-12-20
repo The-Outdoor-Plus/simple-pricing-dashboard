@@ -11,7 +11,8 @@
         <div class="overflow-y-auto">
           <ul class="list-none p-2 m-0 overflow-x-hidden text-sm">
             <template v-for="(menuItem, index) in menuItems" :key="index">
-              <li class="first:mt-0 mt-6">
+              <li class="first:mt-0 mt-1" :class="{ 'mt-6': menuItem.children.length > 0 }"
+                v-if="menuItem.roles.includes(userStore.currentRole)">
                 <a v-if="!menuItem.children.length" @click="navigateTo(menuItem.path)" v-ripple
                   class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple">
                   <i :class="menuItem.icon" class="mr-2"></i>
@@ -30,14 +31,16 @@
                     <i class="pi pi-chevron-down"></i>
                   </div>
                   <ul class="list-none p-0 m-0 overflow-hidden text-sm">
-                    <li v-for="(item, index) in menuItem.children" :key="`${menuItem.name}-${index}`">
-                      <a v-ripple
-                        class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple"
-                        @click="navigateTo(item.path)">
-                        <i :class="item.icon" class="mr-2"></i>
-                        <span class="font-medium">{{ item.name }}</span>
-                      </a>
-                    </li>
+                    <template v-for="(item, index) in menuItem.children" :key="`${menuItem.name}-${index}`">
+                      <li v-if="item.roles.includes(userStore.currentRole)">
+                        <a v-ripple
+                          class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple"
+                          @click="navigateTo(item.path)">
+                          <i :class="item.icon" class="mr-2"></i>
+                          <span class="font-medium">{{ item.name }}</span>
+                        </a>
+                      </li>
+                    </template>
                   </ul>
                 </template>
               </li>
@@ -73,6 +76,20 @@ const menuItems = ref([
     name: 'Home',
     icon: 'pi pi-home',
     path: '/',
+    children: [],
+    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+  },
+  {
+    name: 'RFQs',
+    icon: 'pi pi-file-pdf',
+    path: '/rfqs',
+    children: [],
+    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+  },
+  {
+    name: 'Orders',
+    icon: 'pi pi-shopping-cart',
+    path: '/orders',
     children: [],
     roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
   },
