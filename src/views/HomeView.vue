@@ -2,42 +2,21 @@
   <div class="card flex flex-col justify-center items-center w-full gap-y-8">
     <div class="w-full flex justify-between items-center">
       <div>
-        <Button
-          type="button"
-          label="Announcements"
-          icon="pi pi-bell"
-          :badge="`${announcementsLength}`"
-          badgeSeverity="danger"
-          severity="contrast"
-          outlined
-          @click="router.push('/announcements')"
-        />
+        <Button type="button" label="Announcements" icon="pi pi-bell" :badge="`${announcementsLength}`"
+          badgeSeverity="danger" severity="contrast" outlined @click="router.push('/announcements')" />
       </div>
       <div class="flex gap-4">
-        <Button
-          type="button"
-          label="Cart"
-          icon="pi pi-shopping-cart"
-          :badge="cartStore.cartItemCount.toString()"
-          :disabled="cartStore.cartItemCount === 0"
-          severity="contrast"
-          outlined
-          @click="router.push('/cart')"
-        />
+        <!-- TODO: REMOVE ISAGENT -->
+        <Button v-if="userStore.isAgent" type="button" label="Cart" icon="pi pi-shopping-cart"
+          :badge="cartStore.cartItemCount.toString()" :disabled="cartStore.cartItemCount === 0" severity="contrast"
+          outlined @click="router.push('/cart')" />
       </div>
     </div>
     <div class="w-full flex flex-col lg:flex-row justify-between items-center self-start -mt-4">
-      <div
-        v-if="userStore?.currentUser?.first_name"
-        class="text-2xl text-black order-2 lg:order-1 flex justify-center items-center"
-      >
-        <Avatar
-          v-if="userStore?.currentUser?.avatar_url"
-          :image="userStore?.currentUser?.avatar_url"
-          class="mr-4"
-          size="xlarge"
-          shape="circle"
-        />
+      <div v-if="userStore?.currentUser?.first_name"
+        class="text-2xl text-black order-2 lg:order-1 flex justify-center items-center">
+        <Avatar v-if="userStore?.currentUser?.avatar_url" :image="userStore?.currentUser?.avatar_url" class="mr-4"
+          size="xlarge" shape="circle" />
         Welcome,&nbsp;
         <span class="font-bold">
           {{ userStore.currentUser?.first_name }}
@@ -51,24 +30,14 @@
     <div class="w-full pl-2">
       <span class="text-lg font-semibold text-red-700">NEW!: Custom BBQ Island Configuration</span>
       <br />
-      <Button
-        type="button"
-        outlined
-        severity="contrast"
-        label="Configure a Custom BBQ Island"
-        class="mt-4"
-        @click="router.push('/bbq-island')"
-      ></Button>
+      <Button type="button" outlined severity="contrast" label="Configure a Custom BBQ Island" class="mt-4"
+        @click="router.push('/bbq-island')"></Button>
     </div>
     <div class="w-full flex flex-col xl:grid xl:grid-cols-5 gap-8 mb-5">
-      <div
-        class="w-full gap-y-8"
-        :class="
-          showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)
-            ? 'col-span-3 flex flex-col'
-            : 'col-span-5 flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-8'
-        "
-      >
+      <div class="w-full gap-y-8" :class="showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)
+        ? 'col-span-3 flex flex-col'
+        : 'col-span-5 flex flex-col lg:grid lg:grid-cols-2 lg:gap-x-8'
+        ">
         <div class="w-full flex flex-col gap-y-6">
           <div class="-mb-4">
             <h3 class="text-black font-semibold text-xl ml-2 -mb-2">Product Configuration</h3>
@@ -83,26 +52,14 @@
                   : 'Select a product'
               }}
             </span>
-            <AutoComplete
-              v-model="selectedProduct"
-              option-label="product"
-              :suggestions="filteredProductsList"
-              @complete="searchProducts"
-              dropdown
-              :virtual-scroller-options="{ itemSize: 45 }"
-              size="medium"
-              class="w-full"
-              placeholder="Search for a product..."
-              @option-select="onProductSelect()"
-            >
+            <AutoComplete v-model="selectedProduct" option-label="product" :suggestions="filteredProductsList"
+              @complete="searchProducts" dropdown :virtual-scroller-options="{ itemSize: 45 }" size="medium"
+              class="w-full" placeholder="Search for a product..." @option-select="onProductSelect()">
               <template #option="slotProps">
-                <span
-                  v-html="
-                    highlightMatch(
-                      `${slotProps.option.product} (${slotProps.option.base_part_number})`,
-                    )
-                  "
-                ></span>
+                <span v-html="highlightMatch(
+                  `${slotProps.option.product} (${slotProps.option.base_part_number})`,
+                )
+                  "></span>
               </template>
             </AutoComplete>
           </div>
@@ -114,15 +71,8 @@
                   : 'Select a material'
               }}
             </span>
-            <Select
-              v-model="selectedMaterial"
-              name="material"
-              :options="materialAttributes"
-              option-label="attribute_option"
-              placeholder="Select a material"
-              fluid
-              class="w-full"
-            ></Select>
+            <Select v-model="selectedMaterial" name="material" :options="materialAttributes"
+              option-label="attribute_option" placeholder="Select a material" fluid class="w-full"></Select>
           </div>
           <template v-for="(attributeType, key) in allAttributes">
             <div v-if="attributeType && attributeType.length" class="w-full flex flex-col">
@@ -130,21 +80,14 @@
                 {{
                   selectedAttributes?.[textToKey(key)]?.attribute_option
                     ? getSelectedAttributeText(
-                        key,
-                        selectedAttributes?.[textToKey(key)].attribute_option,
-                      )
+                      key,
+                      selectedAttributes?.[textToKey(key)].attribute_option,
+                    )
                     : `Select ${key}`
                 }}
               </span>
-              <Select
-                v-model="selectedAttributes[textToKey(key)]"
-                :name="textToKey(key)"
-                :options="attributeType"
-                option-label="attribute_option"
-                :placeholder="`Select ${key}`"
-                fluid
-                class="w-full"
-              ></Select>
+              <Select v-model="selectedAttributes[textToKey(key)]" :name="textToKey(key)" :options="attributeType"
+                option-label="attribute_option" :placeholder="`Select ${key}`" fluid class="w-full"></Select>
             </div>
           </template>
         </div>
@@ -158,25 +101,18 @@
               <span class="text-black font-medium mb-2">
                 {{
                   selectedAddons?.[textToKey(key)]?.attribute_option &&
-                  selectedAddons?.[textToKey(key)]?.attribute_option !== 'None'
+                    selectedAddons?.[textToKey(key)]?.attribute_option !== 'None'
                     ? getSelectedAddonText(
-                        key,
-                        selectedAddons?.[textToKey(key)]?.attribute_option,
-                        selectedAddons?.[textToKey(key)]?.part_number,
-                        selectedAddons?.[textToKey(key)]?.add_on_price,
-                      )
+                      key,
+                      selectedAddons?.[textToKey(key)]?.attribute_option,
+                      selectedAddons?.[textToKey(key)]?.part_number,
+                      selectedAddons?.[textToKey(key)]?.add_on_price,
+                    )
                     : `Select ${key}`
                 }}
               </span>
-              <Select
-                v-model="selectedAddons[textToKey(key)]"
-                :name="textToKey(key)"
-                :options="addOnType"
-                option-label="attribute_option"
-                :placeholder="`Select ${key}`"
-                fluid
-                class="w-full"
-              >
+              <Select v-model="selectedAddons[textToKey(key)]" :name="textToKey(key)" :options="addOnType"
+                option-label="attribute_option" :placeholder="`Select ${key}`" fluid class="w-full">
                 <template #option="slotProps">
                   {{ slotProps.option.attribute_option }}
                   {{
@@ -190,14 +126,11 @@
           </template>
         </div>
       </div>
-      <div
-        v-if="
-          !showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole) &&
-          selectedProduct &&
-          selectedProduct.product
-        "
-        class="col-span-5 w-full flex flex-col gap-y-6"
-      >
+      <div v-if="
+        !showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole) &&
+        selectedProduct &&
+        selectedProduct.product
+      " class="col-span-5 w-full flex flex-col gap-y-6">
         <div v-if="currentConfigurationSKU" class="flex items-center justify-center mb-4">
           <h3 class="text-xl font-bold text-red-600 mr-2">SKU:</h3>
           <span class="text-xl">
@@ -216,45 +149,26 @@
           <h3 class="text-2xl text-blue-900 font-medium">Accounts Cost</h3>
           <Divider />
         </div>
-        <div
-          class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8"
-        >
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8">
           <template v-for="(card, i) in accountPriceCards" :key="i">
-            <div
-              v-if="
-                !card.rolesToExclude.includes(
-                  userStore?.currentRole ? userStore?.currentRole : userStore?.currentCompanyRole,
-                )
-              "
-              :id="`flip-card-${card.id}`"
-              class="flip-card hover:cursor-pointer"
-            >
-              <div
-                class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-12"
-              >
-                <Card
-                  class="flip-card__front absolute top-0 right-0 left-0"
-                  @click="flipCard(`flip-card-${card.id}`)"
-                >
+            <div v-if="
+              !card.rolesToExclude.includes(
+                userStore?.currentRole ? userStore?.currentRole : userStore?.currentCompanyRole,
+              )
+            " :id="`flip-card-${card.id}`" class="flip-card hover:cursor-pointer">
+              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-12">
+                <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${card.id}`)">
                   <template #title>
                     <div class="text-center">{{ card.label }} Price</div>
                   </template>
                   <template #footer>
                     <div class="flex gap-4 mt-1">
-                      <Button
-                        :label="`Show ${card.label} Price`"
-                        severity="contrast"
-                        variant="outlined"
-                        class="w-full"
-                        @click.prevent="flipCard(`flip-card-${card.id}`)"
-                      />
+                      <Button :label="`Show ${card.label} Price`" severity="contrast" variant="outlined" class="w-full"
+                        @click.prevent="flipCard(`flip-card-${card.id}`)" />
                     </div>
                   </template>
                 </Card>
-                <Card
-                  class="flip-card__back absolute top-0 right-0 left-0"
-                  @click="unflipCard(`flip-card-${card.id}`)"
-                >
+                <Card class="flip-card__back absolute top-0 right-0 left-0" @click="unflipCard(`flip-card-${card.id}`)">
                   <template #header>
                     <div class="w-full text-center pt-6 text-2xl font-semibold">
                       {{ formatPrice(calculatePrice(getTotalDealerPrice(), card.account)) }}
@@ -283,37 +197,22 @@
           <h3 class="text-2xl text-blue-900 font-medium">Retail Price</h3>
           <Divider />
         </div>
-        <div
-          class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8"
-        >
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8">
           <template v-for="(card, i) in retailPriceCards" :key="i">
             <div :id="`flip-card-${card.id}`" class="flip-card hover:cursor-pointer">
-              <div
-                class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-14"
-              >
-                <Card
-                  class="flip-card__front absolute top-0 right-0 left-0"
-                  @click="flipCard(`flip-card-${card.id}`)"
-                >
+              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-14">
+                <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${card.id}`)">
                   <template #title>
                     <div class="text-center">{{ card.label }} Price</div>
                   </template>
                   <template #footer>
                     <div class="flex gap-4 mt-1">
-                      <Button
-                        :label="`Show ${card.label} Price`"
-                        severity="contrast"
-                        variant="outlined"
-                        class="w-full"
-                        @click.prevent="flipCard(`flip-card-${card.id}`)"
-                      />
+                      <Button :label="`Show ${card.label} Price`" severity="contrast" variant="outlined" class="w-full"
+                        @click.prevent="flipCard(`flip-card-${card.id}`)" />
                     </div>
                   </template>
                 </Card>
-                <Card
-                  class="flip-card__back absolute top-0 right-0 left-0"
-                  @click="unflipCard(`flip-card-${card.id}`)"
-                >
+                <Card class="flip-card__back absolute top-0 right-0 left-0" @click="unflipCard(`flip-card-${card.id}`)">
                   <template #header>
                     <div class="w-full text-center pt-6 text-2xl font-semibold">
                       {{ formatPrice(calculateRetailPrice(getTotalDealerPrice(), card.account)) }}
@@ -333,8 +232,7 @@
                       }}
                       *
                     </p>
-                    <span class="text-sm"
-                      >* Percentage for retail price is approximate and is not 100% accurate. It can
+                    <span class="text-sm">* Percentage for retail price is approximate and is not 100% accurate. It can
                       vary by &#177;1-3%
                     </span>
                   </template>
@@ -345,12 +243,7 @@
         </div>
         <div v-if="getPriceBreakdown.length" class="w-full">
           <h3 class="text-2xl font-bold text-green-600 my-4">Price Breakdown</h3>
-          <DataTable
-            :value="getPriceBreakdown"
-            class="w-full"
-            table-style="min-width: 100%;"
-            style="width: 100%"
-          >
+          <DataTable :value="getPriceBreakdown" class="w-full" table-style="min-width: 100%;" style="width: 100%">
             <Column header="Name" style="min-width: 13rem">
               <template #body="slotProps">
                 {{ slotProps.data.attribute_option }} <br />
@@ -386,14 +279,11 @@
                 {{ formatPrice(slotProps.data.add_on_price_landscape) }}
               </template>
             </Column>
-            <Column
-              v-if="
-                userStore?.currentRole
-                  ? userStore.currentRole !== 'SALES'
-                  : userStore?.currentCompanyRole !== 'SALES'
-              "
-              header="Internet Cost"
-            >
+            <Column v-if="
+              userStore?.currentRole
+                ? userStore.currentRole !== 'SALES'
+                : userStore?.currentCompanyRole !== 'SALES'
+            " header="Internet Cost">
               <template #body="slotProps">
                 {{ formatPrice(slotProps.data.add_on_price_internet) }}
               </template>
@@ -410,24 +300,17 @@
             </Column>
           </DataTable>
         </div>
-        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
-          <Button
-            label="Add to Cart"
-            icon="pi pi-shopping-cart"
-            severity="success"
-            @click="addToCart"
-          />
+        <!-- TODO: REMOVE ISAGENT -->
+        <div v-if="getPriceBreakdown.length && userStore.isAgent" class="w-full flex justify-end gap-4 mb-4 mt-4">
+          <Button label="Add to Cart" icon="pi pi-shopping-cart" severity="success" @click="addToCart" />
         </div>
       </div>
 
-      <div
-        v-if="
-          selectedProduct &&
-          selectedProduct.product &&
-          showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)
-        "
-        class="w-full col-span-2 flex flex-col items-start xl:pl-4 xl:mt-7"
-      >
+      <div v-if="
+        selectedProduct &&
+        selectedProduct.product &&
+        showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)
+      " class="w-full col-span-2 flex flex-col items-start xl:pl-4 xl:mt-7">
         <div v-if="currentConfigurationSKU" class="flex items-center justify-center mb-4">
           <h3 class="text-xl font-bold text-red-600 mr-2">SKU:</h3>
           <span class="text-xl">
@@ -507,31 +390,15 @@
             <div v-if="selectedMaterial.promotion_details">
               Promotion Details: {{ selectedMaterial.promotion_details }}
             </div>
-            <Button
-              v-show="!promotionApplied"
-              label="Apply Promotion"
-              severity="success"
-              class="mt-3"
-              @click="applyPromotion"
-            ></Button>
-            <Button
-              v-show="promotionApplied"
-              label="Promotion Applied"
-              severity="disabled"
-              disabled
-              class="mt-3"
-              @click="applyPromotion"
-            ></Button>
+            <Button v-show="!promotionApplied" label="Apply Promotion" severity="success" class="mt-3"
+              @click="applyPromotion"></Button>
+            <Button v-show="promotionApplied" label="Promotion Applied" severity="disabled" disabled class="mt-3"
+              @click="applyPromotion"></Button>
 
             <Divider />
           </div>
           <h3 class="text-2xl font-bold text-green-600 my-4">Price Breakdown</h3>
-          <DataTable
-            :value="getPriceBreakdown"
-            class="w-full"
-            table-style="min-width: 100%;"
-            style="width: 100%"
-          >
+          <DataTable :value="getPriceBreakdown" class="w-full" table-style="min-width: 100%;" style="width: 100%">
             <Column header="Name" style="min-width: 13rem">
               <template #body="slotProps">
                 {{ slotProps.data.attribute_option }} <br />
@@ -546,7 +413,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_map)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -559,7 +426,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_msrp)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -568,18 +435,16 @@
                 }}
               </template>
             </Column>
-            <Column
-              v-if="
-                userStore?.currentRole
-                  ? userStore.currentRole === 'DEALER'
-                  : userStore?.currentCompanyRole === 'DEALER'
-              "
-              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`"
-            >
+            <Column v-if="
+              userStore?.currentRole
+                ? userStore.currentRole === 'DEALER'
+                : userStore?.currentCompanyRole === 'DEALER'
+            "
+              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`">
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -588,24 +453,21 @@
                 }}
               </template>
             </Column>
-            <Column
-              v-if="
-                showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole) &&
-                (userStore?.currentRole
-                  ? userStore.currentRole !== 'DEALER'
-                  : userStore?.currentCompanyRole !== 'DEALER')
-              "
-              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`"
-            >
+            <Column v-if="
+              showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole) &&
+              (userStore?.currentRole
+                ? userStore.currentRole !== 'DEALER'
+                : userStore?.currentCompanyRole !== 'DEALER')
+            "
+              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`">
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(
                     slotProps.data[
-                      `add_on_price_${
-                        userStore?.currentRole
-                          ? userStore.currentRole.toLowerCase()
-                          : userStore.currentCompanyRole.toLowerCase()
-                      }`
+                    `add_on_price_${userStore?.currentRole
+                      ? userStore.currentRole.toLowerCase()
+                      : userStore.currentCompanyRole.toLowerCase()
+                    }`
                     ],
                   )
                 }}</span>
@@ -613,24 +475,22 @@
                 {{
                   promotionApplied && slotProps.data?.discount
                     ? formatPrice(
-                        slotProps.data[
-                          `add_on_price_${
-                            userStore?.currentRole
-                              ? userStore.currentRole.toLowerCase()
-                              : userStore.currentCompanyRole.toLowerCase()
-                          }`
-                        ] *
-                          (1 - slotProps.data.discount),
-                      )
+                      slotProps.data[
+                      `add_on_price_${userStore?.currentRole
+                        ? userStore.currentRole.toLowerCase()
+                        : userStore.currentCompanyRole.toLowerCase()
+                      }`
+                      ] *
+                      (1 - slotProps.data.discount),
+                    )
                     : formatPrice(
-                        slotProps.data[
-                          `add_on_price_${
-                            userStore?.currentRole
-                              ? userStore.currentRole.toLowerCase()
-                              : userStore.currentCompanyRole.toLowerCase()
-                          }`
-                        ],
-                      )
+                      slotProps.data[
+                      `add_on_price_${userStore?.currentRole
+                        ? userStore.currentRole.toLowerCase()
+                        : userStore.currentCompanyRole.toLowerCase()
+                      }`
+                      ],
+                    )
                 }}
               </template>
             </Column>
@@ -651,48 +511,28 @@
             </Column> -->
           </DataTable>
         </div>
-        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
-          <Button
-            label="Add to Cart"
-            icon="pi pi-shopping-cart"
-            severity="success"
-            @click="addToCart"
-          />
+        <!-- TODO: REMOVE ISAGENT -->
+        <div v-if="getPriceBreakdown.length && userStore.isAgent" class="w-full flex justify-end gap-4 mb-4 mt-4">
+          <Button label="Add to Cart" icon="pi pi-shopping-cart" severity="success" @click="addToCart" />
         </div>
       </div>
     </div>
 
     <div v-if="selectedMaterial && currentImages.length > 0" class="w-full flex justify-center">
-      <Galleria
-        :value="currentImages"
-        :key="
-          currentImages.length
-            ? `${selectedProduct?.product}-${selectedMaterial.attribute_option}-${currentImages[0].label}`
-            : 0
-        "
-        :responsiveOptions="responsiveOptions"
-        :numVisible="5"
-        :circular="true"
-        containerStyle="max-width: 600px; width: 100%"
-        :showItemNavigators="true"
-        :showItemNavigatorsOnHover="true"
-        class="w-full"
-      >
+      <Galleria :value="currentImages" :key="currentImages.length
+        ? `${selectedProduct?.product}-${selectedMaterial.attribute_option}-${currentImages[0].label}`
+        : 0
+        " :responsiveOptions="responsiveOptions" :numVisible="5" :circular="true"
+        containerStyle="max-width: 600px; width: 100%" :showItemNavigators="true" :showItemNavigatorsOnHover="true"
+        class="w-full">
         <template #item="slotProps">
-          <img
-            :src="slotProps.item.imgUrl"
-            :alt="slotProps.item.label"
-            style="width: auto; display: block; max-height: 340px"
-            class="mb-10"
-          />
+          <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+            style="width: auto; display: block; max-height: 340px" class="mb-10" />
         </template>
         <template #thumbnail="slotProps">
           <div class="px-3">
-            <img
-              :src="slotProps.item.imgUrl"
-              :alt="slotProps.item.label"
-              style="display: block; width: auto; max-height: 120px"
-            />
+            <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+              style="display: block; width: auto; max-height: 120px" />
           </div>
         </template>
         <template #caption="slotProps">
@@ -701,10 +541,7 @@
       </Galleria>
     </div>
 
-    <div
-      v-if="selectedProduct && selectedProduct.product"
-      class="self-start w-full flex items-center justify-between"
-    >
+    <div v-if="selectedProduct && selectedProduct.product" class="self-start w-full flex items-center justify-between">
       <h2 class="self-start text-orange-900 text-lg font-semibold">
         {{ selectedProduct.product }} Part Numbers
       </h2>
@@ -731,36 +568,21 @@
         </template>
       </Column>
     </DataTable>
-    <Tabs
-      v-if="
-        selectedProduct &&
-        selectedProduct.product &&
-        productVariations &&
-        Object.keys(productVariations).length > 0
-      "
-      :value="0"
-      scrollable
-      class="w-full"
-    >
+    <Tabs v-if="
+      selectedProduct &&
+      selectedProduct.product &&
+      productVariations &&
+      Object.keys(productVariations).length > 0
+    " :value="0" scrollable class="w-full">
       <TabList>
         <Tab v-for="(values, key, index) in productVariations" :key="key" :value="index">
           {{ key }}
         </Tab>
       </TabList>
       <TabPanels>
-        <TabPanel
-          v-for="(values, key, index) in productVariations"
-          :key="`${key}-table`"
-          :value="index"
-        >
+        <TabPanel v-for="(values, key, index) in productVariations" :key="`${key}-table`" :value="index">
           <!-- {{ values }} -->
-          <DataTable
-            :value="values"
-            table-style="min-width: 100%;"
-            striped-rows
-            scrollable
-            scroll-height="500px"
-          >
+          <DataTable :value="values" table-style="min-width: 100%;" striped-rows scrollable scroll-height="500px">
             <Column header="Product Name" style="min-width: 12rem">
               <template #body="slotProps">
                 {{ selectedProduct.product }}
@@ -778,11 +600,8 @@
                 {{ formatPrice(calculateRetailPrice(slotProps.data.Price, 'MSRP')) }}
               </template>
             </Column>
-            <Column
-              v-if="showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              field="Price"
-              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`"
-            >
+            <Column v-if="showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)" field="Price"
+              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`">
               <template #body="slotProps">
                 {{
                   formatPrice(
@@ -794,50 +613,36 @@
                 }}
               </template>
             </Column>
-            <Column
-              v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Dealer Cost"
-            >
+            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)" header="Dealer Cost">
               <template #body="slotProps">
                 {{ formatPrice(calculatePrice(slotProps.data.Price, 'DEALER')) }}
               </template>
             </Column>
-            <Column
-              v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Group Cost"
-            >
+            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)" header="Group Cost">
               <template #body="slotProps">
                 {{ formatPrice(calculatePrice(slotProps.data.Price, 'GROUP')) }}
               </template>
             </Column>
-            <Column
-              v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Landscape Cost"
-            >
+            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
+              header="Landscape Cost">
               <template #body="slotProps">
                 {{ formatPrice(calculatePrice(slotProps.data.Price, 'LANDSCAPE')) }}
               </template>
             </Column>
-            <Column
-              v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Internet Cost"
-            >
+            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
+              header="Internet Cost">
               <template #body="slotProps">
                 {{ formatPrice(calculatePrice(slotProps.data.Price, 'INTERNET')) }}
               </template>
             </Column>
-            <Column
-              v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Distributor Cost"
-            >
+            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
+              header="Distributor Cost">
               <template #body="slotProps">
                 {{ formatPrice(calculatePrice(slotProps.data.Price, 'DISTRIBUTOR')) }}
               </template>
             </Column>
-            <Column
-              v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Master Distributor Cost"
-            >
+            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
+              header="Master Distributor Cost">
               <template #body="slotProps">
                 {{ formatPrice(calculatePrice(slotProps.data.Price, 'MASTER_DISTRIBUTOR')) }}
               </template>
@@ -846,15 +651,12 @@
         </TabPanel>
       </TabPanels>
     </Tabs>
-    <div
-      v-if="
-        selectedProduct &&
-        selectedProduct.product &&
-        productVariations &&
-        Object.keys(productVariations).length > 0
-      "
-      class="w-full flex justify-end mr-2"
-    >
+    <div v-if="
+      selectedProduct &&
+      selectedProduct.product &&
+      productVariations &&
+      Object.keys(productVariations).length > 0
+    " class="w-full flex justify-end mr-2">
       <Button label="Download CSV" icon="pi pi-download" severity="info" @click="generateCSV" />
     </div>
   </div>
