@@ -82,7 +82,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
-import { useToast } from 'primevue';
+import { useToast } from 'primevue/usetoast';
 import { supabase } from '@/supabase';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
