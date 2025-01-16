@@ -35,7 +35,7 @@ import { z } from 'zod';
 
 const toast = useToast();
 const initialValues = ref({
-  emaiL: '',
+  email: '',
   password: '',
 });
 

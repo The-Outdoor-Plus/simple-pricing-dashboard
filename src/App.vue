@@ -1,17 +1,19 @@
 <script setup>
 import logoUrl from '@/assets/top_logo.svg';
-import { onMounted } from 'vue';
-import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+import { RouterView, useRoute, useRouter } from 'vue-router';
 import { useUserStore } from './store/user';
 import { useCartStore } from './store/cart';
+import { useAppStore } from './store/app';
 
 const userStore = useUserStore();
+const appStore = useAppStore();
 const router = useRouter();
 const route = useRoute();
 const cartStore = useCartStore();
 
 const signOut = async () => {
-  await userStore.logOut();
+  await userStore.logout();
   router.push('/login');
 };
 
@@ -32,20 +34,16 @@ onMounted(async () => {
         <Toolbar v-if="route?.name !== 'Login'" style="padding: 1rem 1rem 1rem 1.5rem">
           <template #start>
             <div class="flex items-center gap-2">
-              <img :src="logoUrl" class="w-7/12 md:w-10/12 max-w-[320px]" />
+              <!-- TODO: REMOVE ISAGENT -->
+              <Button v-if="userStore.isUserAuthenticated && userStore.isAgent" icon="pi pi-bars" variant="text"
+                severity="contrast" @click="appStore.openSidebar()" />
+              <img :src="logoUrl" class="w-7/12 md:w-10/12 max-w-[320px] cursor-pointer" @click="router.push('/')" />
             </div>
           </template>
           <template #end>
             <div class="flex items-center gap-2 w-full">
-              <Button
-                v-if="userStore.isUserAuthenticated"
-                type="button"
-                label="Sign Out"
-                icon="pi pi-sign-out"
-                variant="text"
-                severity="contrast"
-                @click="signOut()"
-              ></Button>
+              <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
+                variant="text" severity="contrast" @click="signOut()"></Button>
             </div>
           </template>
         </Toolbar>

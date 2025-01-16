@@ -44,51 +44,57 @@
       </div>
 
       <!-- Purchase Order -->
-      <div class="mt-6">
+      <!-- <div class="mt-6">
         <h3 class="font-medium text-lg mb-4">Purchase Order Information</h3>
         <div class="w-full md:w-1/3">
           <InputText v-model="purchaseOrder" placeholder="Purchase Order Number" class="w-full" />
         </div>
-      </div>
+      </div> -->
 
       <!-- Additional Notes -->
       <div class="mt-6">
         <h3 class="font-medium text-lg mb-4">Additional Notes</h3>
-        <Textarea v-model="additionalNotes" rows="4" class="w-full" />
+        <Textarea v-model="additionalNotes" rows="4" class="w-full"></Textarea>
       </div>
-    </div>
+    </div -->
 
     <!-- Preview Section -->
     <div class="bg-white rounded-lg shadow">
       <div class="flex justify-between items-center p-6 border-b">
         <h2 class="text-xl font-semibold">RFQ Preview</h2>
         <div class="space-x-4">
-          <Button type="button" label="Generate PDF" icon="pi pi-file-pdf" severity="success" @click="generatePDF" />
-          <Button type="button" label="Send RFQ" icon="pi pi-send" severity="primary" @click="sendRFQ" />
+          <Button type="button" label="Submit RFQ" icon="pi pi-send" severity="primary" @click="submitRFQ"></Button>
         </div>
       </div>
 
       <div class="preview-container">
-        <RFQPreview :company-logo="userStore?.currentCompany?.logo" :rfq-number="rfqNumber" :company-info="companyInfo"
-          :shipping-info="shippingInfo" :purchase-order="purchaseOrder" :items="rfqItems"
-          :additional-notes="additionalNotes" />
+        <RFQPreview :rfq-number="rfqNumber" :company-info="companyInfo" :shipping-info="shippingInfo"
+          :purchase-order="purchaseOrder" :items="rfqItems" :additional-notes="additionalNotes" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import { nextTick } from 'vue';
 import { useUserStore } from '@/store/user';
 import { useRoute, useRouter } from 'vue-router';
 import RFQPreview from '@/components/RFQPreview.vue';
-import html2pdf from 'html2pdf.js';
 import { useRfq } from '@/composables/rfq';
+import { useToast } from 'primevue/usetoast';
+import { supabase } from '@/supabase';
+import { useAppStore } from '@/store/app';
+import { useCartStore } from '@/store/cart';
+import { renderToStaticMarkup } from '@usewaypoint/email-builder';
 
 const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
-const { getRfqNumber } = useRfq();
+const { getRfqNumber, constructHtml2PdfObject, prepareRfqEmail, loadRFQEmail, rfqEmail, postRfqActivityUpdate } = useRfq();
+const toast = useToast();
+const appStore = useAppStore();
+const cartStore = useCartStore();
 
 // Form Data
 const purchaseOrder = ref('');
@@ -126,6 +132,7 @@ onMounted(async () => {
     const newNumber = await getRfqNumber(userStore?.company?.name, companyInfo.value.contact);
     Reflect.set(rfqNumber, 'value', newNumber);
   }
+  await loadRFQEmail();
 });
 
 watch(
@@ -180,70 +187,142 @@ const copyCompanyInfo = () => {
   shippingInfo.value = { ...companyInfo.value };
 };
 
-const generatePDF = async () => {
-  // Wait for any pending updates to complete
-  await nextTick();
-
-  // Get the preview element
-  const element = document.querySelector('.rfq-preview');
-
-  if (!element) {
-    console.error('Preview element not found');
-    return;
-  }
-
-  // Configure PDF options with proper width handling
-  const opt = {
-    margin: [15, 15, 15, 15],
-    filename: `RFQ-${new Date().getTime()}.pdf`,
-    image: { type: 'png', quality: 0.98 },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      letterRendering: true,
-      width: 794, // A4 width in pixels
-      windowWidth: 794,
-    },
-    jsPDF: {
-      unit: 'mm',
-      format: 'a4',
-      orientation: 'portrait',
-      compress: true,
-    },
-  };
-
+const saveRFQ = async () => {
   try {
-    // Store original styles
-    const originalStyles = {
-      transform: element.style.transform,
-      width: element.style.width,
-      margin: element.style.margin,
-      padding: element.style.padding,
+    const updates = [
+      {
+        update_id: crypto.randomUUID(),
+        user_id: userStore.currentUser.id,
+        user_name: `${userStore.currentUser.first_name} ${userStore.currentUser.last_name}`,
+        user_initials: `${userStore.currentUser.first_name.charAt(0)}${userStore.currentUser.last_name.charAt(0)}`,
+        avatar: userStore.currentUser.avatar_url,
+        action_text: `RFQ Created by ${userStore.currentUser.first_name} ${userStore.currentUser.last_name}`,
+        created_at: new Date().toISOString(),
+        user_type: userStore.isAgent ? 'AGENT' : 'CUSTOMER',
+      },
+    ];
+
+    const rfqData = {
+      company_information: companyInfo.value,
+      ship_to_information: shippingInfo.value,
+      purchase_order_number: purchaseOrder.value,
+      items: rfqItems.value,
+      additional_notes: additionalNotes.value,
+      company_id: userStore.company?.id,
+      user_id: userStore.user?.id,
+      rfq_number: rfqNumber.value,
+      agent_assigned_id: null,
+      updates: updates,
+      status: 'RFQ Sent'
     };
 
-    // Reset styles for PDF generation
-    element.style.transform = 'none';
-    element.style.width = '794px';
-    element.style.margin = '0';
-    element.style.padding = '40px';
+    const { data, error } = await supabase
+      .from('rfq')
+      .insert(rfqData)
+      .select();
 
-    // Force layout recalculation
-    element.offsetHeight;
+    if (error) throw error;
 
-    // Generate PDF
-    await html2pdf().from(element).set(opt).save();
-
-    // Restore original styles
-    Object.assign(element.style, originalStyles);
+    return data;
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('Error sending RFQ:', error);
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'Failed to send RFQ. Please try again.',
+      life: 3000
+    });
   }
 };
 
-const sendRFQ = () => {
-  // TODO: Implement RFQ sending
-  console.log('Sending RFQ...');
+const submitRFQ = async () => {
+  try {
+    appStore.setLoading(true);
+
+    await nextTick();
+
+    const newRFQ = await saveRFQ();
+
+    const emailJson = prepareRfqEmail(
+      companyInfo.value,
+      purchaseOrder.value,
+      rfqItems.value,
+      rfqNumber.value,
+      newRFQ[0].id,
+      companyInfo.value.name,
+      rfqEmail.value.html
+    );
+
+
+    // Get the preview element
+    const element = document.querySelector('.rfq-preview');
+
+    if (!element) {
+      console.error('Preview element not found');
+      return;
+    }
+
+    try {
+      // Store original styles
+      const originalStyles = {
+        transform: element.style.transform,
+        width: element.style.width,
+        margin: element.style.margin,
+        padding: element.style.padding,
+      };
+
+      const pdfAsString = await constructHtml2PdfObject(rfqNumber.value, element).output('datauristring');
+
+      const pdfFile = {
+        filename: `RFQ-${rfqNumber.value}.pdf`.replace(/^(RFQ-)+/, 'RFQ-'),
+        content: pdfAsString,
+        contentType: 'application/pdf',
+      };
+
+      const files = [pdfFile];
+
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          // TODO: Get the email address from the user
+          toAddress: 'rodrigo@theoutdoorplus.com',
+          fromAddress: {
+            email: 'media@theoutdoorplus.com',
+            name: 'The Outdoor Plus Dealer Portal'
+          },
+          text: 'New Request for Quote from ' + companyInfo.value.name,
+          subject: 'New RFQ from ' + companyInfo.value.name,
+          html: renderToStaticMarkup(emailJson, { rootBlockId: 'root' }),
+          files: files,
+        }
+      });
+
+      if (error) throw error;
+
+      await postRfqActivityUpdate(newRFQ[0].id, 'RFQ Sent via Email to agents', null, 'System', 'S', null, 'SYSTEM');
+
+      toast.add({
+        severity: 'success',
+        summary: 'RFQ Submitted',
+        detail: 'RFQ has been submitted successfully',
+        life: 3000
+      });
+
+      // Restore original styles
+      Object.assign(element.style, originalStyles);
+
+      cartStore.clearCart();
+
+      router.replace('/rfqs');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
+  } catch (error) {
+    console.error('Error submitting RFQ:', error);
+  } finally {
+    appStore.setLoading(false);
+  }
 };
+
 </script>
 
 <style scoped>

@@ -86,5 +86,12 @@ export const useUserStore = defineStore('user', {
     currentCompany: (state) => {
       return state?.company;
     },
+    isAgent: (state) => {
+      return (
+        (state?.user?.user_metadata?.role === 'ADMIN' ||
+          state?.user?.user_metadata?.role === 'SALES') &&
+        state?.company?.name === 'The Outdoor Plus'
+      );
+    },
   },
 });
