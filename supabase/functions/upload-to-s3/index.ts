@@ -5,11 +5,11 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import { corsHeaders } from "../_shared/cors.ts";
 import { prepareVirtualFile } from "https://deno.land/x/mock_file@v1.1.2/mod.ts";
-import { PutObjectCommand, S3Client } from "npm:@aws-sdk/client-s3";
+import { PutObjectCommand, S3Client } from "npm:@aws-sdk/client-s3@3.616.0";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response(null, { status: 204, headers: { ...corsHeaders } });
   }
 
   prepareVirtualFile("./aws/config");
@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
       const objectKeyPath = removeLeadingSlash(objectKeyName(fileName));
 
       const uploadParams = {
-        Bucket: Deno.env.get("AWS_BUCKET_NAME"),
+        Bucket: Deno.env.get("AWS_BUCKET"),
         Key: objectKeyPath,
         Body: fileContent,
         ContentType: getContentTypeFromExtension(fileName),
