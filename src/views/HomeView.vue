@@ -28,7 +28,7 @@
       </div>
     </div>
     <div class="w-full pl-2">
-      <span class="text-lg font-semibold text-red-700">NEW!: Custom BBQ Island Configuration</span>
+      <span class="text-lg font-semibold text-red-700">NEW!: Custom BBQ Island Configuration (BETA)</span>
       <br />
       <Button type="button" outlined severity="contrast" label="Configure a Custom BBQ Island" class="mt-4"
         @click="router.push('/bbq-island')"></Button>
@@ -413,7 +413,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_map)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -426,7 +426,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_msrp)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -444,7 +444,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
