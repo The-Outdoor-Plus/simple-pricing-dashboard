@@ -86,13 +86,13 @@ const menuItems = ref([
     children: [],
     roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
   },
-  {
-    name: 'Orders',
-    icon: 'pi pi-shopping-cart',
-    path: '/orders',
-    children: [],
-    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
-  },
+  // {
+  //   name: 'Orders',
+  //   icon: 'pi pi-shopping-cart',
+  //   path: '/orders',
+  //   children: [],
+  //   roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+  // },
   {
     name: 'Admin Menu',
     roles: ['ADMIN', 'MANAGER'],
@@ -109,6 +109,12 @@ const menuItems = ref([
         path: '/companies',
         roles: ['ADMIN', 'MANAGER'],
       },
+      {
+        name: 'Emails',
+        icon: 'pi pi-envelope',
+        path: '/emails',
+        roles: ['ADMIN', 'MANAGER'],
+      }
     ],
   },
 ]);
