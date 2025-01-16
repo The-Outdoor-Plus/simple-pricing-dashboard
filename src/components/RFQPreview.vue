@@ -78,9 +78,9 @@
     </div>
 
     <!-- Purchase Order -->
-    <div class="mb-8">
+    <!-- <div class="mb-8">
       <p class="text-lg font-semibold">Purchase Order #: {{ purchaseOrder }}</p>
-    </div>
+    </div> -->
 
     <!-- Items Table -->
     <div class="table-container mb-8">
@@ -156,8 +156,8 @@ const props = defineProps({
     required: true,
   },
   purchaseOrder: {
-    type: String,
-    required: true,
+    type: [String, undefined],
+    required: false,
   },
   items: {
     type: Array,
