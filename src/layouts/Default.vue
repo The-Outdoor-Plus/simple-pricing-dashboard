@@ -6,7 +6,7 @@
       <Toast></Toast>
     </div>
     <div v-if="appStore.loading"
-      class="w-full h-full min-h-screen flex justify-center items-center absolute top-0 left-0 bg-slate-600/10">
+      class="w-full h-full min-h-screen flex justify-center items-center fixed top-0 left-0 bg-slate-600/10">
       <div class="w-full h-full flex justify-center items-center">
         <ProgressSpinner style="width: 100px; height: 100px;" stroke-width="6" aria-label="loading"></ProgressSpinner>
       </div>
@@ -17,7 +17,12 @@
 
 <script setup>
 import { useAppStore } from '@/store/app';
+import { onMounted } from 'vue';
 import SideBar from '@/components/SideBar.vue';
 const appStore = useAppStore();
+
+onMounted(async () => {
+  await appStore.loadEnums();
+})
 
 </script>
