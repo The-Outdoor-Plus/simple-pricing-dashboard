@@ -211,6 +211,16 @@ export default [
           roles: ['ADMIN', 'MANAGER'],
         },
       },
+      {
+        path: 'emails',
+        name: 'Emails - The Outdoor Plus Product Configurator',
+        component: () => import(/* webpackchunkName: "emails" */ '@/views/EmailsView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          roles: ['ADMIN', 'MANAGER'],
+        },
+      },
     ],
   },
   {
