@@ -15,10 +15,38 @@ export function useProduct() {
   const announcements = ref([]);
   const announcementsLength = ref(0);
 
-  const loadProducts = async () => {
+  const loadProduct = async (productId) => {
     try {
-      appStore.setLoading(true);
-      const { data, error } = await supabase.from('BaseProducts').select(`
+      const { data: product, error } = await supabase
+        .from('BaseProducts')
+        .select(
+          `
+        id,
+        base_part_number,
+        product,
+        base_price_dealer,
+        code_formula,
+        product_shape,
+        specification_sheet,
+        size,
+        feature_type,
+        product_type,
+        fire_feature_category
+      `,
+        )
+        .eq('id', productId)
+        .single();
+      if (error) throw error;
+      return product;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadProducts = async (textSearch = null) => {
+    try {
+      // appStore.setLoading(true);
+      let query = supabase.from('BaseProducts').select(`
         id,
         base_part_number,
         product,
@@ -31,6 +59,16 @@ export function useProduct() {
         product_type,
         fire_feature_category
       `);
+
+      if (textSearch) {
+        const searchTerms = textSearch
+          .replace(/ /g, '+')
+          .toLowerCase()
+          .replace(/([^\w\s+])/g, '\\$1');
+        query = supabase.rpc('search_product_by_name_sku', { term: searchTerms });
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       products.value = data;
@@ -410,6 +448,7 @@ export function useProduct() {
     announcements,
     announcementsLength,
     loadProducts,
+    loadProduct,
     loadMaterialAttributes,
     loadAttributes,
     loadAllAddons,
