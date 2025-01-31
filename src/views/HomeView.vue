@@ -27,12 +27,13 @@
         <img :src="userStore?.company?.logo" class="w-auto max-h-14" />
       </div>
     </div>
-    <div class="w-full pl-2">
+    <!-- TODO: Uncomment this when Custom BBQ Island is Ready -->
+    <!-- <div class="w-full pl-2">
       <span class="text-lg font-semibold text-red-700">NEW!: Custom BBQ Island Configuration (BETA)</span>
       <br />
       <Button type="button" outlined severity="contrast" label="Configure a Custom BBQ Island" class="mt-4"
         @click="router.push('/bbq-island')"></Button>
-    </div>
+    </div> -->
     <div class="w-full flex flex-col xl:grid xl:grid-cols-5 gap-8 mb-5">
       <div class="w-full gap-y-8" :class="showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)
         ? 'col-span-3 flex flex-col'
@@ -52,9 +53,10 @@
                   : 'Select a product'
               }}
             </span>
-            <AutoComplete v-model="selectedProduct" option-label="product" :suggestions="filteredProductsList"
-              @complete="searchProducts" dropdown :virtual-scroller-options="{ itemSize: 45 }" size="medium"
-              class="w-full" placeholder="Search for a product..." @option-select="onProductSelect()">
+            <AutoComplete :model-value="selectedProduct" @update:model-value="test" name="productAutoComplete"
+              option-label="product" :suggestions="filteredProductsList" @complete="searchProducts" dropdown
+              :virtual-scroller-options="{ itemSize: 45 }" size="medium" class="w-full"
+              placeholder="Search for a product..." @option-select="onProductSelect()" @change="onSearchProductChange">
               <template #option="slotProps">
                 <span v-html="highlightMatch(
                   `${slotProps.option.product} (${slotProps.option.base_part_number})`,
@@ -664,7 +666,7 @@
 
 <script setup>
 import FormulaDisplay from '@/components/FormulaDisplay.vue';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, onBeforeUnmount, nextTick } from 'vue';
 import { useProduct } from '@/composables/product';
 import {
   showRolePrice,
@@ -676,8 +678,9 @@ import {
 import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
 import { useCartStore } from '@/store/cart';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
+import { TestRenderTemplateCommand } from '@aws-sdk/client-ses';
 
 const toast = useToast();
 const selectedProduct = ref();
@@ -770,16 +773,27 @@ const {
   loadAllAddons,
   generateProductVariations,
   retrieveAnnouncementsLength,
+  loadProduct,
 } = useProduct();
 
 const userStore = useUserStore();
 const appStore = useAppStore();
 const cartStore = useCartStore();
 const router = useRouter();
+const route = useRoute();
+const productQueryId = ref(route.query.product);
+const productQuerySearch = ref(route.query.s);
 
 const currentProduct = computed(() => {
-  return products.value.find((product) => product.id === selectedProduct.value?.id);
+  // return products.value.find((product) => product.id === selectedProduct.value?.id);
+  return selectedProduct.value;
 });
+
+const test = (event) => {
+  if (typeof event !== 'string') {
+    selectedProduct.value = event;
+  }
+}
 
 const searchProducts = (event) => {
   eventQuery.value = event.query;
@@ -946,6 +960,11 @@ const getPriceBreakdown = computed(() => {
 });
 
 const onProductSelect = async () => {
+  router.replace({ path: '/', query: { product: selectedProduct.value.id, s: productQuerySearch.value } })
+  await loadProductInformation();
+};
+
+const loadProductInformation = async () => {
   try {
     selectedMaterial.value = null;
     await loadMaterialAttributes(selectedProduct.value.product);
@@ -1108,8 +1127,24 @@ const currentImages = computed(() => {
   return [...productImages, ...materialImages];
 });
 
+const onSearchProductChange = async (event) => {
+  if (event.value && event.value.length > 2) {
+    await loadProducts(event.value);
+    productQuerySearch.value = event.value;
+  }
+};
+
 onMounted(async () => {
-  await loadProducts();
+  // await loadProducts();
+  if (route.query.product) {
+    productQueryId.value = route.query.product;
+    selectedProduct.value = await loadProduct(route.query.product);
+    await loadProductInformation();
+  }
+  if (route.query.s) {
+    productQuerySearch.value = route.query.s;
+    await loadProducts(productQuerySearch.value);
+  }
   await retrieveAnnouncementsLength();
 });
 
