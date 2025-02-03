@@ -135,14 +135,14 @@
       " class="col-span-5 w-full flex flex-col gap-y-6">
         <div v-if="currentConfigurationSKU" class="flex items-center justify-center mb-4">
           <h3 class="text-xl font-bold text-red-600 mr-2">SKU:</h3>
-          <span class="text-xl">
+          <span class="text-2xl">
             {{ currentConfigurationSKU }}
           </span>
         </div>
         <div class="">
           <h3 class="text-2xl text-blue-900 font-medium">
             Dealer Price:
-            <span class="text-2xl text-black">
+            <span class="text-3xl text-black font-semibold">
               {{ formatPrice(calculatePrice(getTotalDealerPrice(), 'DEALER')) }}
             </span>
           </h3>
@@ -415,7 +415,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_map)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -428,7 +428,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_msrp)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -446,7 +446,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -1090,7 +1090,53 @@ const currentConfigurationName = computed(() => {
 
 const generateCSV = () => {
   appStore.setLoading(true);
-  const rows = Object.values(productVariations.value).flat();
+  const allRows = Object.values(productVariations.value).flat();
+
+  const rows = allRows.map((row) => {
+    let newRow = {
+      SKU: row.SKU,
+      Name: row.Name,
+      'Base Product Name': selectedProduct.value.product,
+    }
+
+    const costHeaderName = userStore?.isAgent || userStore?.currentRole === 'ADMIN' ? null : 'Your Company Cost';
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'DEALER')) {
+      newRow[costHeaderName ? costHeaderName : 'DEALER Price'] = calculatePrice(row.Price, 'DEALER');
+    }
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'INTERNET')) {
+      newRow[costHeaderName ? costHeaderName : 'INTERNET Price'] = calculatePrice(row.Price, 'INTERNET');
+    }
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'MASTER_DISTRIBUTOR')) {
+      newRow[costHeaderName ? costHeaderName : 'MASTER_DISTRIBUTOR Price'] = calculatePrice(row.Price, 'MASTER_DISTRIBUTOR');
+    }
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'DISTRIBUTOR')) {
+      newRow[costHeaderName ? costHeaderName : 'DISTRIBUTOR Price'] = calculatePrice(row.Price, 'DISTRIBUTOR');
+    }
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'GROUP')) {
+      newRow[costHeaderName ? costHeaderName : 'GROUP Price'] = calculatePrice(row.Price, 'GROUP');
+    }
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'LANDSCAPE')) {
+      newRow[costHeaderName ? costHeaderName : 'LANDSCAPE Price'] = calculatePrice(row.Price, 'LANDSCAPE');
+    }
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'MAP')) {
+      newRow['MAP'] = calculateRetailPrice(row.Price, 'MAP');
+    }
+
+    if (isRolePriceAllowed(userStore?.currentRole, 'MSRP')) {
+      newRow['MSRP'] = calculateRetailPrice(row.Price, 'MSRP');
+    }
+
+    return newRow;
+  });
+
+  console.log('Rows', rows);
 
   const headers = Object.keys(rows[0]);
 
@@ -1209,6 +1255,22 @@ const addToCart = () => {
     detail: 'Items have been added to your cart',
     life: 3000,
   });
+};
+
+const isRolePriceAllowed = (role, price) => {
+  const priceRoleSwitch = (role) => ({
+    'MASTER_DISTRIBUTOR': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR'],
+    'DISTRIBUTOR': ['MAP', 'MSRP', 'DISTRIBUTOR'],
+    'DEALER': ['MAP', 'MSRP', 'DEALER'],
+    'GROUP': ['MAP', 'MSRP', 'GROUP'],
+    'LANDSCAPE': ['MAP', 'MSRP', 'LANDSCAPE'],
+    'ADMIN': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR', 'DISTRIBUTOR', 'DEALER', 'GROUP', 'LANDSCAPE', 'INTERNET'],
+    'INTERNET': ['MAP', 'MSRP', 'INTERNET'],
+    'SALES': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR', 'DISTRIBUTOR', 'DEALER', 'GROUP', 'LANDSCAPE'],
+    'TOP-SALES': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR', 'DISTRIBUTOR', 'DEALER', 'GROUP', 'LANDSCAPE', 'INTERNET'],
+  })[role];
+
+  return priceRoleSwitch(role).includes(price);
 };
 </script>
 
