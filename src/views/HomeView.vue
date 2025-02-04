@@ -133,7 +133,7 @@
         selectedProduct &&
         selectedProduct.product
       " class="col-span-5 w-full flex flex-col gap-y-6">
-        <div v-if="currentConfigurationSKU" class="flex items-center justify-center mb-4">
+        <div v-if="currentConfigurationSKU" class="flex flex-row md:flex-col items-center justify-center mb-4">
           <h3 class="text-xl font-bold text-red-600 mr-2">SKU:</h3>
           <span class="text-2xl">
             {{ currentConfigurationSKU }}
@@ -151,14 +151,14 @@
           <h3 class="text-2xl text-blue-900 font-medium">Accounts Cost</h3>
           <Divider />
         </div>
-        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8">
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-6 lg:gap-y-8">
           <template v-for="(card, i) in accountPriceCards" :key="i">
             <div v-if="
               !card.rolesToExclude.includes(
                 userStore?.currentRole ? userStore?.currentRole : userStore?.currentCompanyRole,
               )
             " :id="`flip-card-${card.id}`" class="flip-card hover:cursor-pointer">
-              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-12">
+              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-3 lg:mb-12">
                 <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${card.id}`)">
                   <template #title>
                     <div class="text-center">{{ card.label }} Price</div>
@@ -202,7 +202,7 @@
         <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8">
           <template v-for="(card, i) in retailPriceCards" :key="i">
             <div :id="`flip-card-${card.id}`" class="flip-card hover:cursor-pointer">
-              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-14">
+              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-8 lg:mb-14">
                 <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${card.id}`)">
                   <template #title>
                     <div class="text-center">{{ card.label }} Price</div>
@@ -442,7 +442,7 @@
                 ? userStore.currentRole === 'DEALER'
                 : userStore?.currentCompanyRole === 'DEALER'
             "
-              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`">
+              :header="`${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost`">
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
@@ -461,7 +461,7 @@
                 ? userStore.currentRole !== 'DEALER'
                 : userStore?.currentCompanyRole !== 'DEALER')
             "
-              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`">
+              :header="`${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost`">
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(
@@ -603,7 +603,7 @@
               </template>
             </Column>
             <Column v-if="showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)" field="Price"
-              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`">
+              :header="`${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost`">
               <template #body="slotProps">
                 {{
                   formatPrice(
