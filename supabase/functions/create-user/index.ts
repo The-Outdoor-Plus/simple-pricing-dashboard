@@ -110,6 +110,7 @@ Deno.serve(async (req: Request) => {
           company,
           avatar_url,
         },
+        email_confirm: true,
       });
 
     if (error) {

@@ -41,7 +41,7 @@ onMounted(async () => {
             </div>
           </template>
           <template #end>
-            <div class="flex items-center gap-2 w-full">
+            <div class="flex items-center gap-2 w-full hidden md:block">
               <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
                 variant="text" severity="contrast" @click="signOut()"></Button>
             </div>
