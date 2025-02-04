@@ -1,14 +1,14 @@
 <template>
-  <div class="card flex flex-col items-center justify-center w-6/12 mx-auto mt-40">
-    <img :src="logoUrl" class="w-9/12 mb-16">
+  <div class="card flex flex-col items-center justify-center w-12/12 lg:w-6/12 mx-auto mt-40">
+    <img :src="logoUrl" class="w-10/12 lg:w-9/12 mb-16">
     <Form v-slot="$form" :resolver="resolver" :initial-values="initialValues" @submit="onFormSubmit"
       class="flex flex-col gap-4 w-full items-center">
-      <div class="flex flex-col gap-1 w-9/12">
+      <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
         <InputText name="email" type="text" placeholder="Email" fluid />
         <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">{{
           $form.email.error?.message }}</Message>
       </div>
-      <div class="flex flex-col gap-1 w-9/12">
+      <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
         <Password name="password" placeholder="Password" fluid :toggle-mask="true" :feedback="false" />
         <template v-if="$form.password?.invalid">
           <Message v-for="(error, index) in $form.password.errors" :key="index" severity="error" size="small"
