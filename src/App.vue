@@ -37,7 +37,7 @@ onMounted(async () => {
               <!-- TODO: REMOVE ISAGENT -->
               <Button v-if="userStore.isUserAuthenticated && userStore.isAgent" icon="pi pi-bars" variant="text"
                 severity="contrast" @click="appStore.openSidebar()" />
-              <img :src="logoUrl" class="w-7/12 md:w-10/12 max-w-[320px] cursor-pointer" @click="router.push('/')" />
+              <img :src="logoUrl" class="w-8/12 md:w-11/12 max-w-[380px] cursor-pointer" @click="router.push('/')" />
             </div>
           </template>
           <template #end>
