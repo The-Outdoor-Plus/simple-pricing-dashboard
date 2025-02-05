@@ -148,19 +148,52 @@ export function useProduct() {
         );
       if (attributeType) query = query.eq('attribute_type', attributeType);
       if (productFilter)
-        query = query.or(`product_filter.ilike.%${productFilter}%,product_filter.is.null`);
+        query = query.or(
+          `product_filter.ilike."${productFilter.replace(/"/g, '\\"')}",` +
+            `product_filter.ilike."%${productFilter.replace(/"/g, '\\"')},%",` +
+            `product_filter.ilike."%, ${productFilter.replace(/"/g, '\\"')}%",` +
+            `product_filter.ilike."%, ${productFilter.replace(/"/g, '\\"')},%",` +
+            `product_filter.is.null`,
+        );
       if (materialFilter)
-        query = query.or(`material_filter.ilike.%${materialFilter}%,material_filter.is.null`);
-      if (sizeFilter) query = query.or(`size_filter.ilike.%${sizeFilter}%,size_filter.is.null`);
+        query = query.or(
+          `material_filter.ilike."${materialFilter.replace(/"/g, '\\"')}",` +
+            `material_filter.ilike."%${materialFilter.replace(/"/g, '\\"')},%",` +
+            `material_filter.ilike."%, ${materialFilter.replace(/"/g, '\\"')}%",` +
+            `material_filter.ilike."%, ${materialFilter.replace(/"/g, '\\"')},%",` +
+            `material_filter.is.null`,
+        );
+      if (sizeFilter)
+        query = query.or(
+          `size_filter.ilike."${sizeFilter.replace(/"/g, '\\"')}",` +
+            `size_filter.ilike."%${sizeFilter.replace(/"/g, '\\"')},%",` +
+            `size_filter.ilike."%, ${sizeFilter.replace(/"/g, '\\"')}%",` +
+            `size_filter.ilike."%, ${sizeFilter.replace(/"/g, '\\"')},%",` +
+            `size_filter.is.null`,
+        );
       if (featureFilter)
-        query = query.or(`feature_filter.ilike.%${featureFilter}%,feature_filter.is.null`);
+        query = query.or(
+          `feature_filter.ilike."${featureFilter.replace(/"/g, '\\"')}",` +
+            `feature_filter.ilike."%${featureFilter.replace(/"/g, '\\"')},%",` +
+            `feature_filter.ilike."%, ${featureFilter.replace(/"/g, '\\"')}%",` +
+            `feature_filter.ilike."%, ${featureFilter.replace(/"/g, '\\"')},%",` +
+            `feature_filter.is.null`,
+        );
       if (featureCategoryFilter)
         query = query.or(
-          `feature_category_filter.ilike.%${featureCategoryFilter}%,feature_category_filter.is.null`,
+          `feature_category_filter.ilike."${featureCategoryFilter.replace(/"/g, '\\"')}",` +
+            `feature_category_filter.ilike."%${featureCategoryFilter.replace(/"/g, '\\"')},%",` +
+            `feature_category_filter.ilike."%, ${featureCategoryFilter.replace(/"/g, '\\"')}%",` +
+            `feature_category_filter.ilike."%, ${featureCategoryFilter.replace(/"/g, '\\"')},%",` +
+            `feature_category_filter.is.null`,
         );
       if (colorTonesFilter)
         query = query.or(
-          `color_tones_filter.ilike.%${colorTonesFilter}%,color_tones_filter.is.null`,
+          `color_tones_filter.ilike."${colorTonesFilter.replace(/"/g, '\\"')}",` +
+            `color_tones_filter.ilike."%${colorTonesFilter.replace(/"/g, '\\"')},%",` +
+            `color_tones_filter.ilike."%, ${colorTonesFilter.replace(/"/g, '\\"')}%",` +
+            `color_tones_filter.ilike."%, ${colorTonesFilter.replace(/"/g, '\\"')},%",` +
+            `color_tones_filter.is.null`,
         );
       const { data, error } = await query;
       if (error) throw error;
@@ -242,21 +275,61 @@ export function useProduct() {
         shape_filter`,
       );
       if (productFilter)
-        query = query.or(`product_filter.ilike.%${productFilter}%,product_filter.is.null`);
+        query = query.or(
+          `product_filter.ilike."${productFilter.replace(/"/g, '\\"')}",` +
+            `product_filter.ilike."%${productFilter.replace(/"/g, '\\"')},%",` +
+            `product_filter.ilike."%, ${productFilter.replace(/"/g, '\\"')}%",` +
+            `product_filter.ilike."%, ${productFilter.replace(/"/g, '\\"')},%",` +
+            `product_filter.is.null`,
+        );
       if (productTypeFilter)
         query = query.or(
-          `product_type_filter.ilike.%${productTypeFilter}%,product_type_filter.is.null`,
+          `product_type_filter.ilike."${productTypeFilter.replace(/"/g, '\\"')}",` +
+            `product_type_filter.ilike."%${productTypeFilter.replace(/"/g, '\\"')},%",` +
+            `product_type_filter.ilike."%, ${productTypeFilter.replace(/"/g, '\\"')}%",` +
+            `product_type_filter.ilike."%, ${productTypeFilter.replace(/"/g, '\\"')},%",` +
+            `product_type_filter.is.null`,
         );
       if (materialFilter)
-        query = query.or(`material_filter.ilike.%${materialFilter}%,material_filter.is.null`);
-      if (sizeFilter) query = query.or(`size_filter.ilike.%${sizeFilter}%,size_filter.is.null`);
+        query = query.or(
+          `material_filter.ilike."${materialFilter.replace(/"/g, '\\"')}",` +
+            `material_filter.ilike."%${materialFilter.replace(/"/g, '\\"')},%",` +
+            `material_filter.ilike."%, ${materialFilter.replace(/"/g, '\\"')}%",` +
+            `material_filter.ilike."%, ${materialFilter.replace(/"/g, '\\"')},%",` +
+            `material_filter.is.null`,
+        );
+      if (sizeFilter)
+        query = query.or(
+          `size_filter.ilike."${sizeFilter.replace(/"/g, '\\"')}",` +
+            `size_filter.ilike."%${sizeFilter.replace(/"/g, '\\"')},%",` +
+            `size_filter.ilike."%, ${sizeFilter.replace(/"/g, '\\"')}%",` +
+            `size_filter.ilike."%, ${sizeFilter.replace(/"/g, '\\"')},%",` +
+            `size_filter.is.null`,
+        );
       if (featureFilter)
-        query = query.or(`feature_filter.ilike.%${featureFilter}%,feature_filter.is.null`);
+        query = query.or(
+          `feature_filter.ilike."${featureFilter.replace(/"/g, '\\"')}",` +
+            `feature_filter.ilike."%${featureFilter.replace(/"/g, '\\"')},%",` +
+            `feature_filter.ilike."%, ${featureFilter.replace(/"/g, '\\"')}%",` +
+            `feature_filter.ilike."%, ${featureFilter.replace(/"/g, '\\"')},%",` +
+            `feature_filter.is.null`,
+        );
       if (featureCategoryFilter)
         query = query.or(
-          `feature_category_filter.ilike.%${featureCategoryFilter}%,feature_category_filter.is.null`,
+          `feature_category_filter.ilike."${featureCategoryFilter.replace(/"/g, '\\"')}",` +
+            `feature_category_filter.ilike."%${featureCategoryFilter.replace(/"/g, '\\"')},%",` +
+            `feature_category_filter.ilike."%, ${featureCategoryFilter.replace(/"/g, '\\"')}%",` +
+            `feature_category_filter.ilike."%, ${featureCategoryFilter.replace(/"/g, '\\"')},%",` +
+            `feature_category_filter.is.null`,
         );
-      if (shapeFilter) query = query.or(`shape_filter.ilike.%${shapeFilter}%,shape_filter.is.null`);
+      if (shapeFilter)
+        query = query.or(
+          `shape_filter.ilike."${shapeFilter.replace(/"/g, '\\"')}",` +
+            `shape_filter.ilike."%${shapeFilter.replace(/"/g, '\\"')},%",` +
+            `shape_filter.ilike."%, ${shapeFilter.replace(/"/g, '\\"')}%",` +
+            `shape_filter.ilike."%, ${shapeFilter.replace(/"/g, '\\"')},%",` +
+            `shape_filter.is.null`,
+        );
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -336,7 +409,8 @@ export function useProduct() {
       }
 
       const filteredAttributes = attributes.filter((attr) => {
-        return !attr.material_filter || attr.material_filter === materialOption;
+        const materialFilters = attr.material_filter?.split(',');
+        return !attr.material_filter || materialFilters.includes(materialOption);
       });
 
       const combinations = generateCombinations(
