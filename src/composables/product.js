@@ -31,7 +31,8 @@ export function useProduct() {
         size,
         feature_type,
         product_type,
-        fire_feature_category
+        fire_feature_category,
+        color_tones
       `,
         )
         .eq('id', productId)
@@ -57,7 +58,8 @@ export function useProduct() {
         size,
         feature_type,
         product_type,
-        fire_feature_category
+        fire_feature_category,
+        color_tones
       `);
 
       if (textSearch) {
@@ -175,6 +177,7 @@ export function useProduct() {
     sizeFilter = null,
     featureFilter = null,
     featureCategoryFilter = null,
+    colorTonesFilter = null,
   ) => {
     const attribute = attributeType?.toLowerCase()?.split(' ').join('_') || '';
     try {
@@ -186,6 +189,7 @@ export function useProduct() {
         sizeFilter,
         featureFilter,
         featureCategoryFilter,
+        colorTonesFilter,
       );
       if (attribute) attributes.value[attribute] = attributesValues;
       if (!attributeType) {
@@ -315,7 +319,7 @@ export function useProduct() {
       product.size ?? null,
       product.feature_type ?? null,
       product.fire_feature_category ?? null,
-      product.color_tones_filter ?? null,
+      product.color_tones ?? null,
     );
 
     const placeholders = formula.match(/{(.*?)}/g)?.map((p) => p.replace(/[{}]/g, '')) || [];

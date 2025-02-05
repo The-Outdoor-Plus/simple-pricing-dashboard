@@ -415,7 +415,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_map)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -428,7 +428,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_msrp)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -446,7 +446,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -1013,7 +1013,7 @@ watch(selectedMaterial, async () => {
       selectedProduct.value?.size ?? null,
       selectedProduct.value?.feature_type ?? null,
       selectedProduct.value?.fire_feature_category ?? null,
-      selectedProduct.value?.color_tones_filter ?? null,
+      selectedProduct.value?.color_tones ?? null,
     );
     Object.keys(allAttributes.value).forEach((key) => {
       if (allAttributes.value[key].length > 0) {
