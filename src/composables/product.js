@@ -136,12 +136,13 @@ export function useProduct() {
     sizeFilter = null,
     featureFilter = null,
     featureCategoryFilter = null,
+    colorTonesFilter = null,
   ) => {
     try {
       let query = supabase
         .from('Attributes')
         .select(
-          `id, attribute_type, attribute_option, add_on_price, attribute_code, code_identifier, product_filter, material_filter, size_filter, feature_filter, feature_category_filter`,
+          `id, attribute_type, attribute_option, add_on_price, attribute_code, code_identifier, product_filter, material_filter, size_filter, feature_filter, feature_category_filter, color_tones_filter`,
         );
       if (attributeType) query = query.eq('attribute_type', attributeType);
       if (productFilter)
@@ -154,6 +155,10 @@ export function useProduct() {
       if (featureCategoryFilter)
         query = query.or(
           `feature_category_filter.ilike.%${featureCategoryFilter}%,feature_category_filter.is.null`,
+        );
+      if (colorTonesFilter)
+        query = query.or(
+          `color_tones_filter.ilike.%${colorTonesFilter}%,color_tones_filter.is.null`,
         );
       const { data, error } = await query;
       if (error) throw error;
@@ -310,6 +315,7 @@ export function useProduct() {
       product.size ?? null,
       product.feature_type ?? null,
       product.fire_feature_category ?? null,
+      product.color_tones_filter ?? null,
     );
 
     const placeholders = formula.match(/{(.*?)}/g)?.map((p) => p.replace(/[{}]/g, '')) || [];

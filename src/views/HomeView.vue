@@ -1013,6 +1013,7 @@ watch(selectedMaterial, async () => {
       selectedProduct.value?.size ?? null,
       selectedProduct.value?.feature_type ?? null,
       selectedProduct.value?.fire_feature_category ?? null,
+      selectedProduct.value?.color_tones_filter ?? null,
     );
     Object.keys(allAttributes.value).forEach((key) => {
       if (allAttributes.value[key].length > 0) {
