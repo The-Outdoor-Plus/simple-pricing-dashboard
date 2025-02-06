@@ -564,6 +564,13 @@
       </div>
     </div>
 
+    <div v-if="selectedProduct && selectedProduct.specification_sheet"
+      class="w-full flex flex-col justify-center items-center">
+      <h2 class="text-2xl font-bold text-orange-900 mb-6">Specification Sheets</h2>
+      <iframe :src="currentSpecificationSheets[0].url" class="w-10/12 h-[600px]" style="border: none;">
+      </iframe>
+    </div>
+
     <div v-if="selectedProduct && selectedProduct.product" class="self-start w-full flex items-center justify-between">
       <h2 class="self-start text-orange-900 text-lg font-semibold">
         {{ selectedProduct.product }} Part Numbers
@@ -1008,6 +1015,13 @@ const loadProductVariations = async () => {
     isVariationTableLoading.value = false;
   }
 };
+
+const currentSpecificationSheets = computed(() => {
+  return selectedProduct.value?.specification_sheet.split(',').map((sheet) => ({
+    label: sheet.split(': ')[0],
+    url: sheet.split(': ')[1],
+  }));
+})
 
 watch(
   currentProduct,
