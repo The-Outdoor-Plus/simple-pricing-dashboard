@@ -138,6 +138,29 @@
             {{ currentConfigurationSKU }}
           </span>
         </div>
+
+        <div v-if="selectedMaterial && currentImages.length > 0" class="w-full flex justify-center">
+          <Galleria :value="currentImages" :key="currentImages.length
+            ? `${selectedProduct?.product}-${selectedMaterial.attribute_option}-${currentImages[0].label}`
+            : 0
+            " :responsiveOptions="responsiveOptions" :numVisible="5" :circular="true"
+            containerStyle="max-width: 600px; width: 100%" :showItemNavigators="true" :showItemNavigatorsOnHover="true"
+            class="w-full">
+            <template #item="slotProps">
+              <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+                style="width: auto; display: block; max-height: 340px" class="mb-10" />
+            </template>
+            <template #thumbnail="slotProps">
+              <div class="px-3">
+                <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+                  style="display: block; width: auto; max-height: 120px" />
+              </div>
+            </template>
+            <template #caption="slotProps">
+              <div class="text-xl mb-2 font-bold">{{ slotProps.item.label }}</div>
+            </template>
+          </Galleria>
+        </div>
         <div class="">
           <h3 class="text-2xl text-blue-900 font-medium">
             Dealer Price:
@@ -372,6 +395,28 @@
             )
           }}</span>
         </div>
+        <div v-if="selectedMaterial && currentImages.length > 0" class="w-full flex justify-center">
+          <Galleria :value="currentImages" :key="currentImages.length
+            ? `${selectedProduct?.product}-${selectedMaterial.attribute_option}-${currentImages[0].label}`
+            : 0
+            " :responsiveOptions="responsiveOptions" :numVisible="5" :circular="true"
+            containerStyle="max-width: 600px; width: 100%" :showItemNavigators="true" :showItemNavigatorsOnHover="true"
+            class="w-full">
+            <template #item="slotProps">
+              <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+                style="width: auto; display: block; max-height: 340px" class="mb-10" />
+            </template>
+            <template #thumbnail="slotProps">
+              <div class="px-3">
+                <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
+                  style="display: block; width: auto; max-height: 120px" />
+              </div>
+            </template>
+            <template #caption="slotProps">
+              <div class="text-xl mb-2 font-bold">{{ slotProps.item.label }}</div>
+            </template>
+          </Galleria>
+        </div>
         <div v-if="getPriceBreakdown.length">
           <div v-if="showPromotion">
             <Divider />
@@ -517,29 +562,6 @@
           <Button label="Add to Cart" icon="pi pi-shopping-cart" severity="success" @click="addToCart" />
         </div>
       </div>
-    </div>
-
-    <div v-if="selectedMaterial && currentImages.length > 0" class="w-full flex justify-center">
-      <Galleria :value="currentImages" :key="currentImages.length
-        ? `${selectedProduct?.product}-${selectedMaterial.attribute_option}-${currentImages[0].label}`
-        : 0
-        " :responsiveOptions="responsiveOptions" :numVisible="5" :circular="true"
-        containerStyle="max-width: 600px; width: 100%" :showItemNavigators="true" :showItemNavigatorsOnHover="true"
-        class="w-full">
-        <template #item="slotProps">
-          <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
-            style="width: auto; display: block; max-height: 340px" class="mb-10" />
-        </template>
-        <template #thumbnail="slotProps">
-          <div class="px-3">
-            <img :src="slotProps.item.imgUrl" :alt="slotProps.item.label"
-              style="display: block; width: auto; max-height: 120px" />
-          </div>
-        </template>
-        <template #caption="slotProps">
-          <div class="text-xl mb-2 font-bold">{{ slotProps.item.label }}</div>
-        </template>
-      </Galleria>
     </div>
 
     <div v-if="selectedProduct && selectedProduct.product" class="self-start w-full flex items-center justify-between">
