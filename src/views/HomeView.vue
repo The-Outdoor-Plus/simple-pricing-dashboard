@@ -7,9 +7,8 @@
       </div>
       <div class="flex gap-4">
         <!-- TODO: REMOVE ISAGENT -->
-        <Button v-if="userStore.isAgent" type="button" label="Cart" icon="pi pi-shopping-cart"
-          :badge="cartStore.cartItemCount.toString()" :disabled="cartStore.cartItemCount === 0" severity="contrast"
-          outlined @click="router.push('/cart')" />
+        <Button type="button" label="Cart" icon="pi pi-shopping-cart" :badge="cartStore.cartItemCount.toString()"
+          :disabled="cartStore.cartItemCount === 0" severity="contrast" outlined @click="router.push('/cart')" />
       </div>
     </div>
     <div class="w-full flex flex-col lg:flex-row justify-between items-center self-start -mt-4">
@@ -303,7 +302,7 @@
           </DataTable>
         </div>
         <!-- TODO: REMOVE ISAGENT -->
-        <div v-if="getPriceBreakdown.length && userStore.isAgent" class="w-full flex justify-end gap-4 mb-4 mt-4">
+        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
           <Button label="Add to Cart" icon="pi pi-shopping-cart" severity="success" @click="addToCart" />
         </div>
       </div>
@@ -415,7 +414,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_map)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -428,7 +427,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_msrp)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -446,7 +445,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -514,7 +513,7 @@
           </DataTable>
         </div>
         <!-- TODO: REMOVE ISAGENT -->
-        <div v-if="getPriceBreakdown.length && userStore.isAgent" class="w-full flex justify-end gap-4 mb-4 mt-4">
+        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
           <Button label="Add to Cart" icon="pi pi-shopping-cart" severity="success" @click="addToCart" />
         </div>
       </div>

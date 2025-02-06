@@ -35,8 +35,8 @@ onMounted(async () => {
           <template #start>
             <div class="flex items-center gap-2">
               <!-- TODO: REMOVE ISAGENT -->
-              <Button v-if="userStore.isUserAuthenticated && userStore.isAgent" icon="pi pi-bars" variant="text"
-                severity="contrast" @click="appStore.openSidebar()" />
+              <Button v-if="userStore.isUserAuthenticated" icon="pi pi-bars" variant="text" severity="contrast"
+                @click="appStore.openSidebar()" />
               <img :src="logoUrl" class="w-8/12 md:w-11/12 max-w-[380px] cursor-pointer" @click="router.push('/')" />
             </div>
           </template>
