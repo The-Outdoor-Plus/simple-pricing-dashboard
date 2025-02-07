@@ -221,6 +221,32 @@ export default [
           roles: ['ADMIN', 'MANAGER'],
         },
       },
+      {
+        path: 'fire-media-calculator',
+        name: 'Fire Media Calculator - The Outdoor Plus Product Configurator',
+        component: () =>
+          import(
+            /* webpackchunkName: "fire-media-calculator" */ '@/views/FireMediaCalculatorView.vue'
+          ),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          roles: [
+            'GROUP',
+            'LANDSCAPE',
+            'INTERNET',
+            'ECOMMERCE',
+            'USER',
+            'GUEST',
+            'DEALER',
+            'DISTRIBUTOR',
+            'MASTER_DISTRIBUTOR',
+            'MANAGER',
+            'ADMIN',
+            'SALES',
+          ],
+        },
+      },
     ],
   },
   {

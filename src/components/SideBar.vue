@@ -48,10 +48,10 @@
           </ul>
         </div>
         <div class="mt-auto">
-            <div class="flex items-center w-full mb-2 ml-1">
-              <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
-                variant="text" severity="contrast" @click="signOut()"></Button>
-            </div>
+          <div class="flex items-center w-full mb-2 ml-1">
+            <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
+              variant="text" severity="contrast" @click="signOut()"></Button>
+          </div>
           <hr class="mb-4 mx-4 border-t border-0 border-surface-200 dark:border-surface-700" />
           <div class="m-4 flex items-center p-2 gap-2 rounded text-black duration-150 transition-colors p-ripple">
             <Avatar v-if="userStore?.currentUser?.avatar_url" :image="userStore?.currentUser?.avatar_url"
@@ -97,6 +97,13 @@ const menuItems = ref([
   //   children: [],
   //   roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
   // },
+  {
+    name: 'Fire Media Calculator',
+    icon: 'pi pi-calculator',
+    path: '/fire-media-calculator',
+    children: [],
+    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+  },
   {
     name: 'Admin Menu',
     roles: ['ADMIN', 'MANAGER'],
