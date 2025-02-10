@@ -100,6 +100,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  welcomeEmail: {
+    type: Object,
+    default: () => ({}),
+  },
 });
 
 const emit = defineEmits(['saved', 'cancel']);
@@ -118,6 +122,7 @@ const initialValues = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
+  first_time: true,
 });
 
 const form = ref({
@@ -129,6 +134,7 @@ const form = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
+  first_time: true,
 });
 
 const resolver = ref(zodResolver(
@@ -182,6 +188,7 @@ watch(() => props.user, (newUser) => {
       company: null,
       role: '',
       avatar_url: '',
+      first_time: true,
     };
   }
 }, { immediate: true });
@@ -233,6 +240,7 @@ const handleSubmit = async ({ valid, values }) => {
           company: form.value?.company?.id || null,
           role: form.value.role,
           avatar_url: form.value.avatar_url,
+          first_time: form.value.first_time,
         }
 
         if (form.value.password && form.value.password_confirmation && form.value.password === form.value.password_confirmation) {
@@ -265,10 +273,25 @@ const handleSubmit = async ({ valid, values }) => {
               company: form.value?.company?.id || null,
               avatar_url: form.value.avatar_url,
               password: form.value.password,
+              first_time: form.value.first_time,
             }
           });
 
         if (error) throw error;
+
+        const emailHtml = props.welcomeEmail.html
+          .replace('{{ first_name }}', form.value.first_name)
+          .replace('{{ email_address }}', form.value.email)
+          .replace('{{ password }}', form.value.password);
+
+        await supabase.functions.invoke('resend-email', {
+          body: {
+            toAddress: form.value.email,
+            fromAddress: 'TOP Portal <noreply@updates.topfires.com>',
+            subject: '🔥 Welcome to the TOP Portal',
+            html: emailHtml,
+          }
+        });
 
         toast.add({
           severity: 'success',

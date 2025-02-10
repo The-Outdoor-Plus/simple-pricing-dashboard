@@ -11,7 +11,7 @@
     <Dialog v-model:visible="showUserForm" class="w-[92vw] md:w-[75vw] lg:w-[60vw] xl:w-[45vw] 2xl:w-[750px]"
       :header="selectedUser ? 'Edit User' : 'New User'" :modal="true">
       <UserForm :user="selectedUser" :companies="companies" :isEdit="isEdit" @saved="userSaved"
-        @cancel="showUserForm = false" />
+        @cancel="showUserForm = false" :welcomeEmail="welcomeEmail" />
     </Dialog>
   </div>
 </template>
@@ -23,6 +23,7 @@ import UsersTable from '@/components/UsersTable.vue';
 import UserForm from '@/components/UserForm.vue';
 import { supabase } from '@/supabase';
 import { FilterMatchMode } from '@primevue/core/api';
+import { useUser } from '@/composables/user';
 
 const router = useRouter();
 const showUserForm = ref(false);
@@ -37,6 +38,8 @@ const filters = ref({
   'first_name': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 
+const { loadWelcomeEmail, welcomeEmail } = useUser();
+
 // Fetch users with filters and pagination
 const fetchUsers = async (page = 0, rowsPerPage = 10) => {
   try {
@@ -48,6 +51,7 @@ const fetchUsers = async (page = 0, rowsPerPage = 10) => {
         last_name,
         email,
         avatar_url,
+        first_time,
         company(
           id,
           name,
@@ -65,6 +69,7 @@ const fetchUsers = async (page = 0, rowsPerPage = 10) => {
         last_name,
         email,
         avatar_url,
+        first_time,
         company!inner(
           id,
           name,
@@ -123,6 +128,7 @@ const userSaved = () => {
 onMounted(async () => {
   await fetchUsers(); // Initial fetch
   await fetchCompanies();
+  await loadWelcomeEmail();
 });
 </script>
 

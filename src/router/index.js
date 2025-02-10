@@ -13,8 +13,25 @@ router.beforeEach((to, from, next) => {
   const allowedRoles = to.meta.roles || [];
   const requiresAuth = to.meta.requiresAuth;
   const onlyWhenLoggedOut = to.meta.onlyWhenLoggedOut;
+  const requiresChangedPassword = to.meta.requiresChangedPassword;
   const currentUser = userStore.currentUser;
   const loggedIn = userStore.isUserAuthenticated;
+  const isFirstTime = userStore.isFirstTime;
+
+  const reauthenticationTime = localStorage.getItem('reauthentication');
+  if (reauthenticationTime && loggedIn) {
+    const elapsedTimeInSeconds = Math.floor((Date.now() - reauthenticationTime) / 1000);
+
+    console.log('elapsedTimeInSeconds', elapsedTimeInSeconds);
+
+    if (elapsedTimeInSeconds > 600) {
+      localStorage.removeItem('reauthentication');
+      userStore.logout();
+      return next({
+        path: '/login',
+      });
+    }
+  }
 
   if (requiresAuth && !onlyWhenLoggedOut && !loggedIn) {
     return next({
@@ -27,6 +44,23 @@ router.beforeEach((to, from, next) => {
     return next({
       path: '/login',
       query: { redirect: to.fullPath },
+    });
+  }
+
+  if (loggedIn && requiresChangedPassword && isFirstTime) {
+    return next({
+      path: '/update-password',
+      query: {
+        redirect: to.fullPath,
+        email: currentUser?.email,
+        first_time: isFirstTime,
+      },
+    });
+  }
+
+  if (to.path === '/update-password' && !loggedIn && (to.query.email || to.query.first_time)) {
+    return next({
+      path: '/login',
     });
   }
 

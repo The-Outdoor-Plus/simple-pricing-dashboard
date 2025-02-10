@@ -93,5 +93,8 @@ export const useUserStore = defineStore('user', {
         state?.company?.name === 'The Outdoor Plus'
       );
     },
+    isFirstTime: (state) => {
+      return state?.user?.user_metadata?.first_time;
+    },
   },
 });

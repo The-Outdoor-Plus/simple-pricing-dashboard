@@ -60,6 +60,7 @@ Deno.serve(async (req: Request) => {
       last_name,
       company,
       avatar_url,
+      first_time,
     } = await req.json();
 
     if (!email || !password || !role || !first_name || !last_name || !company) {
@@ -80,6 +81,12 @@ Deno.serve(async (req: Request) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    }
+
+    let first_time_local = first_time;
+
+    if (first_time === null || first_time === undefined) {
+      first_time_local = true;
     }
 
     const adminSupabaseClient = createClient(
@@ -109,6 +116,7 @@ Deno.serve(async (req: Request) => {
           role,
           company,
           avatar_url,
+          first_time: first_time_local || true,
         },
         email_confirm: true,
       });

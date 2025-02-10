@@ -13,6 +13,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -37,6 +38,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -60,6 +62,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -83,6 +86,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -106,6 +110,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -129,6 +134,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -152,6 +158,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -175,6 +182,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -198,6 +206,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: ['ADMIN', 'MANAGER'],
         },
       },
@@ -208,6 +217,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: ['ADMIN', 'MANAGER'],
         },
       },
@@ -218,6 +228,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: ['ADMIN', 'MANAGER'],
         },
       },
@@ -231,6 +242,7 @@ export default [
         meta: {
           requiresAuth: true,
           onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
           roles: [
             'GROUP',
             'LANDSCAPE',
@@ -260,6 +272,38 @@ export default [
         meta: {
           requiresAuth: false,
           onlyWhenLoggedOut: true,
+          requiresChangedPassword: false,
+          roles: [
+            'GROUP',
+            'LANDSCAPE',
+            'INTERNET',
+            'ECOMMERCE',
+            'USER',
+            'GUEST',
+            'DEALER',
+            'DISTRIBUTOR',
+            'MASTER_DISTRIBUTOR',
+            'MANAGER',
+            'ADMIN',
+            'SALES',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    path: '/update-password',
+    component: () => import('@/layouts/LoginLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Update Password',
+        component: () =>
+          import(/* webpackChunkName: "update-password" */ '@/views/UpdatePasswordView.vue'),
+        meta: {
+          requiresAuth: false,
+          onlyWhenLoggedOut: false,
+          requiresChangedPassword: false,
           roles: [
             'GROUP',
             'LANDSCAPE',

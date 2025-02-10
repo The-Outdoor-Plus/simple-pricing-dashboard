@@ -31,19 +31,20 @@ onMounted(async () => {
   <router-view v-slot="{ Component }">
     <transition name="fade">
       <div class="w-full flex flex-col">
-        <Toolbar v-if="route?.name !== 'Login'" style="padding: 1rem 1rem 1rem 1.5rem">
+        <Toolbar v-if="route?.name !== 'Login' && route?.name !== 'UpdatePassword'"
+          style="padding: 1rem 1rem 1rem 1.5rem">
           <template #start>
             <div class="flex items-center gap-2">
               <!-- TODO: REMOVE ISAGENT -->
-              <Button v-if="userStore.isUserAuthenticated" icon="pi pi-bars" variant="text" severity="contrast"
-                @click="appStore.openSidebar()" />
+              <Button v-if="userStore.isUserAuthenticated && !userStore.isFirstTime" icon="pi pi-bars" variant="text"
+                severity="contrast" @click="appStore.openSidebar()" />
               <img :src="logoUrl" class="w-8/12 md:w-11/12 max-w-[380px] cursor-pointer" @click="router.push('/')" />
             </div>
           </template>
           <template #end>
             <div class="flex items-center gap-2 w-full hidden md:block">
-              <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
-                variant="text" severity="contrast" @click="signOut()"></Button>
+              <Button v-if="userStore.isUserAuthenticated && !userStore.isFirstTime" type="button" label="Sign Out"
+                icon="pi pi-sign-out" variant="text" severity="contrast" @click="signOut()"></Button>
             </div>
           </template>
         </Toolbar>

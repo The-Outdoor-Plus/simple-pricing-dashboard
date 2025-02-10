@@ -42,7 +42,11 @@ Deno.serve(async (req: Request) => {
       }
 
       return new Response(
-        JSON.stringify({ success: true, message: "Authorized" }),
+        JSON.stringify({
+          success: true,
+          message: "Authorized",
+          first_time: data.user.user_metadata.first_time,
+        }),
         {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

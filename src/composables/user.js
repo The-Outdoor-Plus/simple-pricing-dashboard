@@ -5,6 +5,7 @@ import { useAppStore } from '@/store/app';
 export function useUser() {
   const appStore = useAppStore();
   const allowedDomains = ref(['theoutdoorplus.com', 'videlusa.com']);
+  const welcomeEmail = ref(null);
 
   const loadUserInformation = async (id, columns = '*') => {
     try {
@@ -24,7 +25,7 @@ export function useUser() {
       body: { email, password },
     });
     if (error) throw new Error('Invalid credentials');
-    return data?.success || false;
+    return { success: data?.success || false, first_time: data?.first_time || false };
   };
 
   const sendOtp = async (email) => {
@@ -55,11 +56,35 @@ export function useUser() {
     return { user: data.user, session: data.session };
   };
 
+  const loadWelcomeEmail = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('emails')
+        .select('html, name, type, primary')
+        .eq('type', 'Welcome Email')
+        .eq('primary', true)
+        .single();
+
+      if (error) throw error;
+      welcomeEmail.value = data;
+    } catch (error) {
+      console.error('Error loading Welcome Email:', error);
+      toast.add({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'Failed to load Welcome Email',
+        life: 3000,
+      });
+    }
+  };
+
   return {
     loadUserInformation,
     verifyCredentials,
     sendOtp,
     verifyOtp,
     allowedDomains,
+    welcomeEmail,
+    loadWelcomeEmail,
   };
 }

@@ -112,23 +112,43 @@ const onFormSubmit = async ({ valid, values }) => {
       const form = JSON.parse(JSON.stringify(values));
       if (allowedDomains.value.includes(form.email.split('@')[1])) {
         const { data, error } = await supabase.auth.signInWithPassword(form);
-        console.log('Data', data);
         if (error) throw error;
         await userStore.sucessfullLogin(data.user, data.session);
-        await userStore.loadUserCompany();
-        toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
-        if (route?.query?.redirect) router.push(`${route.query.redirect}`);
-        else router.push('/');
+        if (data.user.user_metadata.first_time) {
+          await supabase.auth.reauthenticate();
+          localStorage.setItem('reauthentication', Date.now());
+          toast.add({ severity: 'success', summary: 'OTP Sent!', detail: 'Please check your email for the OTP for your password reset.', life: 5000 });
+          router.push({ path: '/update-password', query: { email: form.email, first_time: true } });
+        } else {
+          await userStore.loadUserCompany();
+          toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
+          if (route?.query?.redirect) router.push(`${route.query.redirect}`);
+          else router.push('/');
+        }
       } else {
-        const credentialsValid = await verifyCredentials(form.email, form.password);
-        areCredentialsValid.value = credentialsValid;
-        if (credentialsValid) {
+        const {
+          success: credentialsValid,
+          first_time,
+        } = await verifyCredentials(form.email, form.password);
+        if (first_time) {
+          const { data, error } = await supabase.auth.signInWithPassword(form);
+          if (error) throw error;
+          await userStore.sucessfullLogin(data.user, data.session);
+          await supabase.auth.reauthenticate();
+          localStorage.setItem('reauthentication', Date.now());
+          toast.add({ severity: 'success', summary: 'OTP Sent!', detail: 'Please check your email for the OTP for your password reset.', life: 5000 });
+          router.push({ path: '/update-password', query: { email: form.email, first_time: true } });
+        } else {
+          areCredentialsValid.value = credentialsValid;
+        }
+        if (credentialsValid && !first_time) {
           await sendOtp(form.email);
           toast.add({ severity: 'success', summary: 'OTP Sent!', detail: 'Please check your email for the OTP', life: 5000 });
           initialOtpValues.value.email = form.email;
           userEmail.value = form.email;
           isOtpSent.value = true;
-        } else {
+        }
+        if (!credentialsValid) {
           toast.add({ severity: 'error', summary: 'Error singing in', detail: 'Invalid credentials', life: 5000 });
         }
       }
