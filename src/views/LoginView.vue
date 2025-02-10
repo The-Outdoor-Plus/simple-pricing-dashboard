@@ -1,8 +1,8 @@
 <template>
   <div class="card flex flex-col items-center justify-center w-12/12 lg:w-6/12 mx-auto mt-40">
     <img :src="logoUrl" class="w-11/12 lg:w-10/12 mb-16">
-    <Form v-slot="$form" :resolver="resolver" :initial-values="initialValues" @submit="onFormSubmit"
-      class="flex flex-col gap-4 w-full items-center">
+    <Form v-show="!isOtpSent || !areCredentialsValid" v-slot="$form" :resolver="resolver"
+      :initial-values="initialValues" @submit="onFormSubmit" class="flex flex-col gap-4 w-full items-center">
       <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
         <InputText name="email" type="text" placeholder="Email" fluid />
         <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">{{
@@ -15,17 +15,37 @@
             variant="simple">{{
               error.message }}</Message>
         </template>
-
       </div>
+
       <Button type="submit" label="Login" class="w-6/12 !bg-blue-600 hover:!bg-blue-400 !border-none"></Button>
+    </Form>
+    <Form v-if="isOtpSent && areCredentialsValid" v-slot="$otpForm" :resolver="otpResolver"
+      :initial-values="initialOtpValues" @submit="onOtpSubmit" class="flex flex-col gap-4 w-full items-center">
+      <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
+        <InputText v-model="userEmail" name="email" type="text" placeholder="Email" fluid />
+        <Message v-if="$otpForm.email?.invalid" severity="error" size="small" variant="simple">{{
+          $otpForm.email.error?.message }}</Message>
+      </div>
+      <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
+        <InputOtp v-model="otpCode" name="otp" fluid :length="6" class="w-full justify-center" />
+        <template v-if="$otpForm.otp?.invalid">
+          <Message v-for="(error, index) in $otpForm.otp.errors" :key="index" severity="error" size="small"
+            variant="simple">{{
+              error.message }}</Message>
+        </template>
+      </div>
+      <Button :disabled="$otpForm.otp?.invalid" type="submit" label="Login"
+        class="w-6/12 !bg-blue-600 hover:!bg-blue-400 !border-none"></Button>
     </Form>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { supabase } from '@/supabase';
 import { useUserStore } from '@/store/user';
+import { useUser } from '@/composables/user';
+import { useAppStore } from '@/store/app';
 import { useRouter, useRoute } from 'vue-router';
 import logoUrl from '@/assets/top_logo.svg';
 
@@ -39,11 +59,28 @@ const initialValues = ref({
   password: '',
 });
 
+const initialOtpValues = ref({
+  email: '',
+  otp: '',
+});
+
+const otpCode = ref('');
+const userEmail = ref('');
+const appStore = useAppStore();
 const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
+const {
+  allowedDomains,
+  verifyOtp,
+  sendOtp,
+  verifyCredentials,
+} = useUser();
+
 
 const isLoading = ref(false);
+const areCredentialsValid = ref(false);
+const isOtpSent = ref(false);
 
 const resolver = ref(zodResolver(
   z.object({
@@ -54,30 +91,78 @@ const resolver = ref(zodResolver(
       })
       .refine((value) => /[A-Z]/.test(value), {
         message: 'Must have an uppercase letter.'
-      })
+      }),
     // .refine((value) => /d/.test(value), {
     //   message: 'Must have a number.'
     // })
   })
 ));
 
+const otpResolver = ref(zodResolver(
+  z.object({
+    email: z.string().min(1, { message: 'Email is required.' }).email({ message: 'Invalid email address' }),
+    otp: z.string().min(1, { message: 'OTP is required.' }),
+  })
+));
+
 const onFormSubmit = async ({ valid, values }) => {
   if (valid) {
     try {
-      isLoading.value = true;
+      appStore.setLoading(true);
       const form = JSON.parse(JSON.stringify(values));
-      const { data, error } = await supabase.auth.signInWithPassword(form);
-      if (error) throw error;
-      await userStore.sucessfullLogin(data.user, data.session);
-      await userStore.loadUserCompany();
-      toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
-      if (route?.query?.redirect) router.push(`${route.query.redirect}`);
-      else router.push('/');
+      if (allowedDomains.value.includes(form.email.split('@')[1])) {
+        const { data, error } = await supabase.auth.signInWithPassword(form);
+        console.log('Data', data);
+        if (error) throw error;
+        await userStore.sucessfullLogin(data.user, data.session);
+        await userStore.loadUserCompany();
+        toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
+        if (route?.query?.redirect) router.push(`${route.query.redirect}`);
+        else router.push('/');
+      } else {
+        const credentialsValid = await verifyCredentials(form.email, form.password);
+        areCredentialsValid.value = credentialsValid;
+        if (credentialsValid) {
+          await sendOtp(form.email);
+          toast.add({ severity: 'success', summary: 'OTP Sent!', detail: 'Please check your email for the OTP', life: 5000 });
+          initialOtpValues.value.email = form.email;
+          userEmail.value = form.email;
+          isOtpSent.value = true;
+        } else {
+          toast.add({ severity: 'error', summary: 'Error singing in', detail: 'Invalid credentials', life: 5000 });
+        }
+      }
     } catch (e) {
       toast.add({ severity: 'error', summary: 'Error singing in', detail: e?.message || 'An error ocurred trying to sign in. Please contact TOP Support.', life: 5000 });
       console.error(e);
     } finally {
-      isLoading.value = false;
+      appStore.setLoading(false);
+    }
+  }
+}
+
+const onOtpSubmit = async ({ valid, values }) => {
+  if (valid && otpCode.value.length === 6) {
+    try {
+      appStore.setLoading(true);
+      values.otp = otpCode.value;
+      values.email = userEmail.value;
+      const form = JSON.parse(JSON.stringify(values));
+      const otpValid = await verifyOtp(form.email, form.otp);
+      if (otpValid) {
+        await userStore.sucessfullLogin(otpValid.user, otpValid.session);
+        await userStore.loadUserCompany();
+        toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
+        if (route?.query?.redirect) router.push(`${route.query.redirect}`);
+        else router.push('/');
+      } else {
+        toast.add({ severity: 'error', summary: 'Error singing in', detail: 'Invalid OTP', life: 5000 });
+      }
+    } catch (e) {
+      toast.add({ severity: 'error', summary: 'Error singing in', detail: e?.message || 'An error ocurred trying to sign in. Please contact TOP Support.', life: 5000 });
+      console.error(e);
+    } finally {
+      appStore.setLoading(false);
     }
   }
 }
