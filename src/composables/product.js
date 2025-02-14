@@ -379,12 +379,12 @@ export function useProduct() {
     }
   };
 
-  const generateProductVariations = async (product) => {
+  const generateProductVariations = async (product, currentMaterial = null) => {
     const basePrice = product.base_price_dealer;
     const baseName = product.product;
     const formula = product.code_formula;
 
-    const materialAttributes = await retrieveMaterialAttributes(product.product);
+    let materialAttributes = await retrieveMaterialAttributes(product.product);
     const attributes = await retrieveAttributes(
       null,
       product.product ?? null,
@@ -398,6 +398,15 @@ export function useProduct() {
     const placeholders = formula.match(/{(.*?)}/g)?.map((p) => p.replace(/[{}]/g, '')) || [];
     const groupedVariations = {};
 
+    console.log(currentMaterial);
+    console.log(materialAttributes);
+
+    if (currentMaterial && currentMaterial.attribute_option) {
+      materialAttributes = materialAttributes.filter(
+        (material) => material.attribute_option === currentMaterial.attribute_option,
+      );
+    }
+
     materialAttributes.forEach((material) => {
       const materialCode = material?.attribute_code || '';
       const materialOption = material?.attribute_option || '';
@@ -409,7 +418,7 @@ export function useProduct() {
       }
 
       const filteredAttributes = attributes.filter((attr) => {
-        const materialFilters = attr.material_filter?.split(',');
+        const materialFilters = attr.material_filter?.split(',').map((filter) => filter.trim());
         return !attr.material_filter || materialFilters.includes(materialOption);
       });
 

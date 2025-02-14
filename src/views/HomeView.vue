@@ -52,10 +52,11 @@
                   : 'Select a product'
               }}
             </span>
-            <AutoComplete :model-value="selectedProduct" @update:model-value="test" name="productAutoComplete"
-              option-label="product" :suggestions="filteredProductsList" @complete="searchProducts" dropdown
-              :virtual-scroller-options="{ itemSize: 45 }" size="medium" class="w-full"
-              placeholder="Search for a product..." @option-select="onProductSelect()" @change="onSearchProductChange">
+            <AutoComplete :model-value="selectedProduct" @update:model-value="updateSelectedProduct"
+              name="productAutoComplete" option-label="product" :suggestions="filteredProductsList"
+              @complete="searchProducts" dropdown :virtual-scroller-options="{ itemSize: 45 }" size="medium"
+              class="w-full" placeholder="Search for a product..." @option-select="onProductSelect()"
+              @change="onSearchProductChange">
               <template #option="slotProps">
                 <span v-html="highlightMatch(
                   `${slotProps.option.product} (${slotProps.option.base_part_number})`,
@@ -459,7 +460,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_map)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -472,7 +473,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_msrp)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -490,7 +491,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                  }}</span>
+                }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -612,7 +613,8 @@
       <TabPanels>
         <TabPanel v-for="(values, key, index) in productVariations" :key="`${key}-table`" :value="index">
           <!-- {{ values }} -->
-          <DataTable :value="values" table-style="min-width: 100%;" striped-rows scrollable scroll-height="500px">
+          <DataTable :value="values" table-style="min-width: 100%;" striped-rows
+            :virtualScrollerOptions="{ itemSize: 35 }" scrollable scroll-height="500px">
             <Column header="Product Name" style="min-width: 12rem">
               <template #body="slotProps">
                 {{ selectedProduct.product }}
@@ -708,7 +710,6 @@ import { useAppStore } from '@/store/app';
 import { useCartStore } from '@/store/cart';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import { TestRenderTemplateCommand } from '@aws-sdk/client-ses';
 
 const toast = useToast();
 const selectedProduct = ref();
@@ -817,7 +818,7 @@ const currentProduct = computed(() => {
   return selectedProduct.value;
 });
 
-const test = (event) => {
+const updateSelectedProduct = (event) => {
   if (typeof event !== 'string') {
     selectedProduct.value = event;
   }
@@ -995,11 +996,14 @@ const onProductSelect = async () => {
 const loadProductInformation = async () => {
   try {
     selectedMaterial.value = null;
+    productVariations.value = {};
     await loadMaterialAttributes(selectedProduct.value.product);
     materialAttributes.value.length > 0
       ? (selectedMaterial.value = materialAttributes.value[0])
       : (selectedMaterial.value = null);
-    loadProductVariations();
+    if (selectedMaterial.value && selectedMaterial.value.attribute_option) {
+      await loadProductVariations();
+    }
   } catch (e) {
     console.error(e);
   }
@@ -1007,12 +1011,17 @@ const loadProductInformation = async () => {
 
 const loadProductVariations = async () => {
   try {
+    appStore.setLoading(true);
     isVariationTableLoading.value = true;
-    productVariations.value = await generateProductVariations(selectedProduct.value);
+    let newProductVariations = await generateProductVariations(selectedProduct.value);
+    // let newProductVariations = await generateProductVariations(selectedProduct.value, selectedMaterial.value);
+    // productVariations.value = { ...productVariations.value, ...newProductVariations };
+    productVariations.value = newProductVariations;
   } catch (e) {
     console.error(e);
   } finally {
     isVariationTableLoading.value = false;
+    appStore.setLoading(false);
   }
 };
 
@@ -1074,6 +1083,7 @@ watch(selectedMaterial, async () => {
         );
       }
     });
+    await loadProductVariations();
   }
 });
 
