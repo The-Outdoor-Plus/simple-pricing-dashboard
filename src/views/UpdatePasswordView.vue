@@ -18,7 +18,17 @@
     <!-- First Time Login Password Update Form -->
     <Form v-else v-slot="$form" :resolver="passwordResolver" @submit="onPasswordSubmit"
       class="flex flex-col gap-4 w-full items-center">
+      <div class="flex flex-col gap-1 w-11/12 lg:w-9/12 mb-3">
+        <label for="otp" class="block">Enter the 6-digit code sent to your email</label>
+        <InputOtp v-model="form.otp" name="otp" fluid :length="6" class="w-full justify-center" />
+        <template v-if="$form.otp?.invalid">
+          <Message v-for="(error, index) in $form.otp.errors" :key="index" severity="error" size="small"
+            variant="simple">{{
+              error.message }}</Message>
+        </template>
+      </div>
       <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
+        <label for="password" class="block">Enter your new password</label>
         <Password v-model="form.password" name="password" placeholder="New Password" fluid :toggle-mask="true" />
         <template v-if="$form.password?.invalid">
           <Message v-for="(error, index) in $form.password.errors" :key="index" severity="error" size="small"
@@ -26,19 +36,12 @@
         </template>
       </div>
       <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
+        <label for="password_confirmation" class="block">Confirm your new password</label>
         <Password v-model="form.password_confirmation" name="password_confirmation" placeholder="Confirm Password" fluid
           :toggle-mask="true" :feedback="false" />
         <template v-if="$form.password_confirmation?.invalid">
           <Message v-for="(error, index) in $form.password_confirmation.errors" :key="index" severity="error"
             size="small" variant="simple">{{ error.message }}</Message>
-        </template>
-      </div>
-      <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
-        <InputOtp v-model="form.otp" name="otp" fluid :length="6" class="w-full justify-center" />
-        <template v-if="$form.otp?.invalid">
-          <Message v-for="(error, index) in $form.otp.errors" :key="index" severity="error" size="small"
-            variant="simple">{{
-              error.message }}</Message>
         </template>
       </div>
       <Button type="submit" label="Update Password"

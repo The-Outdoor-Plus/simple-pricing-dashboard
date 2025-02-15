@@ -27,6 +27,7 @@
           $otpForm.email.error?.message }}</Message>
       </div>
       <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
+        <label for="otp" class="block">Enter the 6-digit code sent to your email</label>
         <InputOtp v-model="otpCode" name="otp" fluid :length="6" class="w-full justify-center" />
         <template v-if="$otpForm.otp?.invalid">
           <Message v-for="(error, index) in $otpForm.otp.errors" :key="index" severity="error" size="small"
@@ -110,7 +111,14 @@ const onFormSubmit = async ({ valid, values }) => {
     try {
       appStore.setLoading(true);
       const form = JSON.parse(JSON.stringify(values));
-      if (allowedDomains.value.includes(form.email.split('@')[1])) {
+
+      const {
+        success: credentialsValid,
+        first_time,
+        email_otp_active,
+      } = await verifyCredentials(form.email, form.password);
+
+      if (!email_otp_active) {
         const { data, error } = await supabase.auth.signInWithPassword(form);
         if (error) throw error;
         await userStore.sucessfullLogin(data.user, data.session);
@@ -126,10 +134,6 @@ const onFormSubmit = async ({ valid, values }) => {
           else router.push('/');
         }
       } else {
-        const {
-          success: credentialsValid,
-          first_time,
-        } = await verifyCredentials(form.email, form.password);
         if (first_time) {
           const { data, error } = await supabase.auth.signInWithPassword(form);
           if (error) throw error;
