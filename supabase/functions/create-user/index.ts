@@ -61,6 +61,7 @@ Deno.serve(async (req: Request) => {
       company,
       avatar_url,
       first_time,
+      email_otp_active,
     } = await req.json();
 
     if (!email || !password || !role || !first_name || !last_name || !company) {
@@ -84,9 +85,14 @@ Deno.serve(async (req: Request) => {
     }
 
     let first_time_local = first_time;
+    let email_otp_active_local = email_otp_active;
 
     if (first_time === null || first_time === undefined) {
       first_time_local = true;
+    }
+
+    if (email_otp_active === null || email_otp_active === undefined) {
+      email_otp_active_local = true;
     }
 
     const adminSupabaseClient = createClient(
@@ -116,7 +122,8 @@ Deno.serve(async (req: Request) => {
           role,
           company,
           avatar_url,
-          first_time: first_time_local || true,
+          first_time: first_time_local,
+          email_otp_active: email_otp_active_local,
         },
         email_confirm: true,
       });
