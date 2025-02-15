@@ -168,7 +168,12 @@ const onPasswordSubmit = async ({ valid, values }) => {
         nonce: form.value.otp,
       });
 
+      const { error: updateError } = await supabase.from('users').update({
+        first_time: false,
+      }).eq('email', userEmail.value);
+
       if (error) throw error;
+      if (updateError) throw updateError;
 
       // If this was a first-time login, log out and redirect to login
       if (isFirstTimeLogin.value) {

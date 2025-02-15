@@ -54,7 +54,7 @@
         <Message v-if="$form.avatar_url?.invalid" severity="error" size="small" variant="simple">{{
           $form.avatar_url.error?.message }}</Message>
       </div>
-      <div v-if="isEdit" class="flex items-center gap-2 mb-1">
+      <div v-if="isEdit" class="flex items-center gap-2 mb-4">
         <Checkbox v-model="editUserPassword" inputId="editUserPassword" binary></Checkbox>
         <label for="editUserPassword" class="block">Edit User Password</label>
       </div>
@@ -131,7 +131,7 @@ const initialValues = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
-  confirm_email: true,
+  confirm_email: false,
   email_otp_active: true,
 });
 
@@ -144,7 +144,7 @@ const form = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
-  confirm_email: true,
+  confirm_email: false,
   email_otp_active: true,
 });
 
@@ -201,7 +201,7 @@ watch(() => props.user, (newUser) => {
       company: null,
       role: '',
       avatar_url: '',
-      confirm_email: true,
+      confirm_email: false,
       email_otp_active: true,
     };
   }

@@ -2,7 +2,7 @@
   <div>
     <DataTable v-model:filters="localFilters" :value="users" class="w-full" :paginator="true" :rows="rows"
       :totalRecords="totalRecords" :lazy="true" @page="onPage" dataKey="id" style="width: 100%"
-      table-style="min-width: 100%;"
+      table-style="min-width: 100%; font-size: 14px;"
       paginatorTemplate="FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink RowsPerPageDropdown"
       currentPageReportTemplate="{first} to {last} of {totalRecords}" filterDisplay="row"
       :globalFilterFields="['first_name', 'last_name', 'email', 'company.name']" :rowsPerPageOptions="[10, 25, 50]">
@@ -11,24 +11,24 @@
           <span class="text-xl font-bold">User List</span>
         </div>
       </template>
-      <Column style="min-width: 12rem" field="id" header="ID" :show-filter-menu="false">
+      <Column style="min-width: 10rem" field="id" header="ID" :show-filter-menu="false">
         <template #body="slotProps">
           {{ slotProps.data.id }}
         </template>
       </Column>
-      <Column style="min-width: 12rem" field="first_name" header="First Name" :show-filter-menu="false">
+      <Column style="min-width: 10rem" field="first_name" header="First Name" :show-filter-menu="false">
         <template #filter="{ filterModel, filterCallback }">
           <InputText v-model="filterModel.value" type="text" @input="updateFilters(filterCallback)"
             placeholder="Search by First Name" />
         </template>
       </Column>
-      <Column style="min-width: 12rem" field="last_name" header="Last Name" />
-      <Column style="min-width: 20rem" field="email" header="Email" />
-      <Column style="min-width: 15rem" field="company.name" header="Company" :show-filter-menu="false">
+      <Column style="min-width: 10rem" field="last_name" header="Last Name" />
+      <Column style="min-width: 16rem" field="email" header="Email" />
+      <Column style="min-width: 12rem" field="company.name" header="Company" :show-filter-menu="false">
         <template #filter="{ filterModel, filterCallback }">
           <AutoComplete v-model="filterModel.value" dropdown @change="updateFilters(filterCallback)"
             :suggestions="filteredCompanies" option-label="name" option-value="id" placeholder="Filter by Company"
-            style="min-width: 15rem" :show-clear="true" @complete="searchCompanies">
+            style="min-width: 12rem" :show-clear="true" @complete="searchCompanies">
             <template #option="slotProps">
               <div>
                 <p v-html="highlightMatch(slotProps.option.name)"></p>
@@ -41,6 +41,12 @@
         </template>
       </Column>
       <Column style="min-width: 10rem" field="role" header="Role" />
+      <Column style="min-width: 6rem" field="first_time" header="Confirmed">
+        <template #body="slotProps">
+          <i class="pi pi-check-circle text-green-500" v-if="!slotProps.data.first_time"></i>
+          <i class="pi pi-times-circle text-red-500" v-else></i>
+        </template>
+      </Column>
       <Column style="min-width: 8rem" header="Actions">
         <template #body="slotProps">
           <Button icon="pi pi-pencil" rounded variant="outlined" severity="contrast" @click="editUser(slotProps.data)"
