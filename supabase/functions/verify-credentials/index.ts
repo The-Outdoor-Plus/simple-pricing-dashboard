@@ -46,6 +46,7 @@ Deno.serve(async (req: Request) => {
           success: true,
           message: "Authorized",
           first_time: data.user.user_metadata.first_time,
+          email_otp_active: data.user.user_metadata.email_otp_active,
         }),
         {
           status: 200,
