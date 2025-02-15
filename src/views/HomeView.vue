@@ -460,7 +460,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_map)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -473,7 +473,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price_msrp)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -491,7 +491,7 @@
               <template #body="slotProps">
                 <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
                   formatPrice(slotProps.data.add_on_price)
-                }}</span>
+                  }}</span>
                 <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
                   promotionApplied && slotProps.data?.discount
@@ -614,7 +614,7 @@
         <TabPanel v-for="(values, key, index) in productVariations" :key="`${key}-table`" :value="index">
           <!-- {{ values }} -->
           <DataTable :value="values" table-style="min-width: 100%;" striped-rows
-            :virtualScrollerOptions="{ itemSize: 35 }" scrollable scroll-height="500px">
+            :virtualScrollerOptions="{ itemSize: 75 }" scrollable scroll-height="500px">
             <Column header="Product Name" style="min-width: 12rem">
               <template #body="slotProps">
                 {{ selectedProduct.product }}
