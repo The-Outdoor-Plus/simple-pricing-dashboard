@@ -21,7 +21,8 @@ const selectedShape = ref({
   label: 'Round',
   value: 'round',
   icon: 'pi pi-circle-fill'
-})
+});
+
 const selectedMaterial = ref(materials[0])
 const depth = ref(2) // inches
 const diameter = ref(24) // inches
@@ -72,7 +73,7 @@ const result = computed(() => {
         <div class="mb-6">
           <label class="block text-sm font-medium mb-2">Shape</label>
           <div class="flex gap-2">
-            <SelectButton v-model="selectedShape" :options="shapes" aria-labelledby="Shape">
+            <SelectButton v-model="selectedShape" :options="shapes" aria-labelledby="Shape" :allowEmpty="false">
               <template #option="{ option }">
                 <i :class="option.icon" class="mr-1"></i>
                 {{ option.label }}
@@ -114,7 +115,7 @@ const result = computed(() => {
 
       <!-- Right Column - Results -->
       <div class="bg-white p-6 rounded-xl shadow-lg">
-        <h2 class="text-xl font-semibold mb-4">Results</h2>
+        <h2 class="text-xl font-semibold mb-4">Results: {{ selectedShape.label }}</h2>
 
         <div class="bg-gray-50 rounded-lg p-6 text-center">
           <div class="mb-3">
