@@ -54,17 +54,8 @@
         <Message v-if="$form.avatar_url?.invalid" severity="error" size="small" variant="simple">{{
           $form.avatar_url.error?.message }}</Message>
       </div>
-      <div v-if="!isEdit" class="flex items-center gap-2 mb-1">
-        <Checkbox v-model="form.confirm_email" inputId="confirm_email" value="true"></Checkbox>
-        <label for="confirm_email" class="block">Confirm User Email (If Confirmed, User Will Not Receive Welcome
-          Email)</label>
-      </div>
-      <div class="flex items-center gap-2 mb-1">
-        <Checkbox v-model="form.email_otp_active" inputId="email_otp_active" value="true"></Checkbox>
-        <label for="email_otp_active" class="block">Enable Email 2FA</label>
-      </div>
       <div v-if="isEdit" class="flex items-center gap-2 mb-1">
-        <Checkbox v-model="editUserPassword" inputId="editUserPassword" value="true"></Checkbox>
+        <Checkbox v-model="editUserPassword" inputId="editUserPassword" binary></Checkbox>
         <label for="editUserPassword" class="block">Edit User Password</label>
       </div>
       <div v-if="(isEdit && editUserPassword) || !isEdit">
@@ -82,6 +73,15 @@
           <Message v-if="$form.password_confirmation?.invalid" severity="error" size="small" variant="simple">{{
             $form.password_confirmation.error?.message }}</Message>
         </div>
+      </div>
+      <div v-if="!isEdit" class="flex items-center gap-2 mb-4">
+        <Checkbox v-model="form.confirm_email" inputId="confirm_email" binary></Checkbox>
+        <label for="confirm_email" class="block">Confirm User Email (If Confirmed, User Will Not Receive Welcome
+          Email)</label>
+      </div>
+      <div class="flex items-center gap-2 mb-4">
+        <Checkbox v-model="form.email_otp_active" inputId="email_otp_active" binary></Checkbox>
+        <label for="email_otp_active" class="block">Enable Email 2FA</label>
       </div>
       <Button type="submit" label="Save" icon="pi pi-check" class="mt-6" />
       <Button type="button" label="Cancel" severity="contrast" icon="pi pi-times" class="ml-2" @click="cancel" />
@@ -131,7 +131,7 @@ const initialValues = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
-  confirm_email: false,
+  confirm_email: true,
   email_otp_active: true,
 });
 
@@ -144,7 +144,7 @@ const form = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
-  confirm_email: false,
+  confirm_email: true,
   email_otp_active: true,
 });
 
@@ -156,6 +156,8 @@ const resolver = ref(zodResolver(
     company: z.string().min(1, { message: 'Company is required.' }),
     role: z.string().min(1, { message: 'Role is required.' }),
     avatar_url: z.string().optional(),
+    confirm_email: z.boolean().optional(),
+    email_otp_active: z.boolean().optional(),
     password: z.string().min(6, { message: 'Minimum 6 characters' })
       .refine((value) => /[a-z]/.test(value), {
         message: 'Must have a lowercase letter.'
@@ -199,7 +201,7 @@ watch(() => props.user, (newUser) => {
       company: null,
       role: '',
       avatar_url: '',
-      confirm_email: false,
+      confirm_email: true,
       email_otp_active: true,
     };
   }
