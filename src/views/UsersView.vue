@@ -52,6 +52,7 @@ const fetchUsers = async (page = 0, rowsPerPage = 10) => {
         email,
         avatar_url,
         first_time,
+        email_otp_active,
         company(
           id,
           name,
@@ -70,6 +71,7 @@ const fetchUsers = async (page = 0, rowsPerPage = 10) => {
         email,
         avatar_url,
         first_time,
+        email_otp_active,
         company!inner(
           id,
           name,

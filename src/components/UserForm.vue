@@ -54,6 +54,15 @@
         <Message v-if="$form.avatar_url?.invalid" severity="error" size="small" variant="simple">{{
           $form.avatar_url.error?.message }}</Message>
       </div>
+      <div v-if="!isEdit" class="flex items-center gap-2 mb-1">
+        <Checkbox v-model="form.confirm_email" inputId="confirm_email" value="true"></Checkbox>
+        <label for="confirm_email" class="block">Confirm User Email (If Confirmed, User Will Not Receive Welcome
+          Email)</label>
+      </div>
+      <div class="flex items-center gap-2 mb-1">
+        <Checkbox v-model="form.email_otp_active" inputId="email_otp_active" value="true"></Checkbox>
+        <label for="email_otp_active" class="block">Enable Email 2FA</label>
+      </div>
       <div v-if="isEdit" class="flex items-center gap-2 mb-1">
         <Checkbox v-model="editUserPassword" inputId="editUserPassword" value="true"></Checkbox>
         <label for="editUserPassword" class="block">Edit User Password</label>
@@ -122,7 +131,8 @@ const initialValues = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
-  first_time: true,
+  confirm_email: false,
+  email_otp_active: true,
 });
 
 const form = ref({
@@ -134,7 +144,8 @@ const form = ref({
   avatar_url: '',
   password: '',
   password_confirmation: '',
-  first_time: true,
+  confirm_email: false,
+  email_otp_active: true,
 });
 
 const resolver = ref(zodResolver(
@@ -188,7 +199,8 @@ watch(() => props.user, (newUser) => {
       company: null,
       role: '',
       avatar_url: '',
-      first_time: true,
+      confirm_email: false,
+      email_otp_active: true,
     };
   }
 }, { immediate: true });
@@ -240,7 +252,8 @@ const handleSubmit = async ({ valid, values }) => {
           company: form.value?.company?.id || null,
           role: form.value.role,
           avatar_url: form.value.avatar_url,
-          first_time: form.value.first_time,
+          first_time: !form.value.confirm_email,
+          email_otp_active: form.value.email_otp_active,
         }
 
         if (form.value.password && form.value.password_confirmation && form.value.password === form.value.password_confirmation) {
@@ -273,25 +286,27 @@ const handleSubmit = async ({ valid, values }) => {
               company: form.value?.company?.id || null,
               avatar_url: form.value.avatar_url,
               password: form.value.password,
-              first_time: form.value.first_time,
+              first_time: !form.value.confirm_email,
+              email_otp_active: form.value.email_otp_active,
             }
           });
 
         if (error) throw error;
 
-        const emailHtml = props.welcomeEmail.html
-          .replace('{{ first_name }}', form.value.first_name)
-          .replace('{{ email_address }}', form.value.email)
-          .replace('{{ password }}', form.value.password);
-
-        await supabase.functions.invoke('resend-email', {
-          body: {
-            toAddress: form.value.email,
-            fromAddress: 'TOP Portal <noreply@updates.topfires.com>',
-            subject: '🔥 Welcome to the TOP Portal',
-            html: emailHtml,
-          }
-        });
+        if (!form.value.confirm_email) {
+          const emailHtml = props.welcomeEmail.html
+            .replace('{{ first_name }}', form.value.first_name)
+            .replace('{{ email_address }}', form.value.email)
+            .replace('{{ password }}', form.value.password);
+          await supabase.functions.invoke('resend-email', {
+            body: {
+              toAddress: form.value.email,
+              fromAddress: 'TOP Portal <noreply@updates.topfires.com>',
+              subject: '🔥 Welcome to the TOP Portal',
+              html: emailHtml,
+            }
+          });
+        }
 
         toast.add({
           severity: 'success',
