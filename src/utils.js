@@ -57,7 +57,9 @@ export const showRolePrice = (role) => {
 };
 
 export const calculatePercentage = (priceToGet, dealerPrice) => {
-  return `${addSign(Math.round(((priceToGet - dealerPrice) / dealerPrice) * 100))}%`;
+  const percentage = Math.round(((priceToGet - dealerPrice) / dealerPrice) * 100);
+  if (percentage === 0) return '';
+  return `${addSign(percentage)}%`;
 };
 
 export const addSign = (number) => {
