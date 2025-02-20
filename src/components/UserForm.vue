@@ -133,6 +133,7 @@ const initialValues = ref({
   password_confirmation: '',
   confirm_email: false,
   email_otp_active: true,
+  access_to: ['The Outdoor Plus']
 });
 
 const form = ref({
@@ -146,6 +147,7 @@ const form = ref({
   password_confirmation: '',
   confirm_email: false,
   email_otp_active: true,
+  access_to: ['The Outdoor Plus']
 });
 
 const resolver = ref(zodResolver(
@@ -203,6 +205,7 @@ watch(() => props.user, (newUser) => {
       avatar_url: '',
       confirm_email: false,
       email_otp_active: true,
+      access_to: ['The Outdoor Plus']
     };
   }
 }, { immediate: true });
@@ -256,6 +259,7 @@ const handleSubmit = async ({ valid, values }) => {
           avatar_url: form.value.avatar_url,
           first_time: !form.value.confirm_email,
           email_otp_active: form.value.email_otp_active,
+          access_to: form.value.access_to,
         }
 
         if (form.value.password && form.value.password_confirmation && form.value.password === form.value.password_confirmation) {
@@ -290,6 +294,7 @@ const handleSubmit = async ({ valid, values }) => {
               password: form.value.password,
               first_time: !form.value.confirm_email,
               email_otp_active: form.value.email_otp_active,
+              access_to: form.value.access_to,
             }
           });
 
