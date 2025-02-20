@@ -88,9 +88,15 @@ export const useUserStore = defineStore('user', {
     },
     isAgent: (state) => {
       return (
-        (state?.user?.user_metadata?.role === 'ADMIN' ||
-          state?.user?.user_metadata?.role === 'SALES') &&
-        state?.company?.name === 'The Outdoor Plus'
+        state?.user?.user_metadata?.role === 'ADMIN' ||
+        state?.user?.user_metadata?.role === 'TOP_SALES'
+      );
+    },
+    isSales: (state) => {
+      return (
+        state?.user?.user_metadata?.role === 'ADMIN' ||
+        state?.user?.user_metadata?.role === 'TOP_SALES' ||
+        state?.user?.user_metadata?.role === 'SALES'
       );
     },
     isFirstTime: (state) => {
