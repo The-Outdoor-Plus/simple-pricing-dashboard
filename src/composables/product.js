@@ -1,8 +1,10 @@
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import { supabase } from '@/supabase';
 import { useToast } from 'primevue';
 import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
+import { useUtils } from '@/composables/utils';
+import { evaluateFormula } from '@/utils/formulaEvaluator';
 
 export function useProduct() {
   const appStore = useAppStore();
@@ -14,6 +16,8 @@ export function useProduct() {
   const addOns = ref({});
   const announcements = ref([]);
   const announcementsLength = ref(0);
+  const { currentRole } = useUserStore();
+  const { getPricesTiers } = useUtils();
 
   const loadProduct = async (productId) => {
     try {
@@ -379,7 +383,12 @@ export function useProduct() {
     }
   };
 
-  const generateProductVariations = async (product, currentMaterial = null) => {
+  const generateProductVariations = async (
+    product,
+    currentMaterial = null,
+    salesPrices = null,
+    companyPrices = null,
+  ) => {
     const basePrice = product.base_price_dealer;
     const baseName = product.product;
     const formula = product.code_formula;
@@ -397,9 +406,6 @@ export function useProduct() {
 
     const placeholders = formula.match(/{(.*?)}/g)?.map((p) => p.replace(/[{}]/g, '')) || [];
     const groupedVariations = {};
-
-    console.log(currentMaterial);
-    console.log(materialAttributes);
 
     if (currentMaterial && currentMaterial.attribute_option) {
       materialAttributes = materialAttributes.filter(
@@ -431,11 +437,56 @@ export function useProduct() {
         materialOption,
       );
 
+      console.log(salesPrices);
+      console.log(companyPrices);
+
+      const combinedTiers = {
+        ...companyPrices,
+        ...salesPrices,
+      };
+
+      const combinationsWithPrice = combinations.map((combination) => {
+        let combinationResult = {
+          ...combination,
+          prices: {},
+        };
+
+        Object.keys(combinedTiers).forEach((tierName) => {
+          if (tierName === 'companyCost' && !Array.isArray(combinedTiers[tierName])) {
+            if (combinedTiers[tierName].show_to_roles.includes(currentRole)) {
+              combinationResult.prices['companyCost'] = evaluateFormula(
+                combinedTiers[tierName].formula,
+                {
+                  basePrice: combination.Price,
+                },
+              );
+            }
+          } else {
+            if (combinedTiers[tierName].length > 0) {
+              if (combinedTiers[tierName][0].show_to_roles.includes(currentRole)) {
+                combinationResult.prices[tierName] = evaluateFormula(
+                  combinedTiers[tierName][0].formula,
+                  {
+                    basePrice: combination.Price,
+                  },
+                );
+              }
+            }
+          }
+        });
+
+        delete combinationResult.Price;
+        return combinationResult;
+      });
+
       if (!groupedVariations[materialOption]) {
-        groupedVariations[materialOption] = [];
+        groupedVariations[materialOption] = {};
       }
 
-      groupedVariations[materialOption].push(...combinations);
+      groupedVariations[materialOption] = {
+        price_columns: Object.keys(combinedTiers),
+        combinations: combinationsWithPrice,
+      };
     });
 
     return groupedVariations;
