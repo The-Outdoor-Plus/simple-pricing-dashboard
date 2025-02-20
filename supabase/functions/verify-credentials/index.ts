@@ -22,17 +22,35 @@ Deno.serve(async (req: Request) => {
     );
 
     try {
-      const { email, password } = await req.json();
+      const { email, password, division } = await req
+        .json();
       const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password,
       });
-      if (error) {
+
+      if (error || !division) {
         return new Response(
           JSON.stringify({
             success: false,
             message: "Unauthorized",
-            error: error.message,
+            error: error?.message ?? "Error verifying division access.",
+            division_sent: !!division,
+          }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      if (!data.user.user_metadata.access_to.includes(division)) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: "Unauthorized",
+            error: "You do not have access to this division",
+            division_sent: !!division,
           }),
           {
             status: 400,
@@ -47,6 +65,7 @@ Deno.serve(async (req: Request) => {
           message: "Authorized",
           first_time: data.user.user_metadata.first_time,
           email_otp_active: data.user.user_metadata.email_otp_active,
+          division_sent: !!division,
         }),
         {
           status: 200,
