@@ -65,3 +65,18 @@ export const calculatePercentage = (priceToGet, dealerPrice) => {
 export const addSign = (number) => {
   return number > 0 ? '+' + number : number < 0 ? '-' + Math.abs(number) : '0';
 };
+
+export const textToKey = (text) => {
+  return text.replace(/\s+/g, '_').toLowerCase();
+};
+
+export const extractImages = (imagesText) => {
+  let images = [];
+  if (imagesText) {
+    images = imagesText.split(',').map((image) => {
+      const [label, imgUrl] = image.split(/:\s+/); // Split on the first ": " with optional whitespace
+      return { label: label.trim(), imgUrl: imgUrl.trim() }; // Trim to clean up spaces
+    });
+  }
+  return images;
+};
