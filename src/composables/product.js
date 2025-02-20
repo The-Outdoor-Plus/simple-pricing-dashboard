@@ -1,23 +1,48 @@
-import { ref, toRaw } from 'vue';
+import { ref, computed } from 'vue';
 import { supabase } from '@/supabase';
 import { useToast } from 'primevue';
-import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
-import { useUtils } from '@/composables/utils';
-import { evaluateFormula } from '@/utils/formulaEvaluator';
+import { retrieveMaterialAttributes, retrieveAttributes } from '@/utils/product';
+import { textToKey } from '@/utils';
+
+const products = ref([]);
+const materialAttributes = ref([]);
+const attributes = ref({});
+const allAttributes = ref([]);
+const addOns = ref({});
+const announcements = ref([]);
+const announcementsLength = ref(0);
+const selectedProduct = ref(null);
+const selectedAddons = ref({});
+const selectedMaterial = ref(null);
+const promotionApplied = ref(false);
+const selectedAttributes = ref({});
 
 export function useProduct() {
   const appStore = useAppStore();
   const toast = useToast();
-  const products = ref([]);
-  const materialAttributes = ref([]);
-  const attributes = ref({});
-  const allAttributes = ref([]);
-  const addOns = ref({});
-  const announcements = ref([]);
-  const announcementsLength = ref(0);
-  const { currentRole } = useUserStore();
-  const { getPricesTiers } = useUtils();
+
+  const setSelectedAddons = (newVal) => {
+    selectedAddons.value = newVal;
+  };
+
+  const setSelectedMaterial = (newVal) => {
+    selectedMaterial.value = newVal;
+  };
+
+  const setPromotionApplied = (newVal) => {
+    promotionApplied.value = newVal;
+  };
+
+  const setSelectedAttributes = (newVal) => {
+    selectedAttributes.value = newVal;
+  };
+
+  const cleanSelectedAttributes = () => {
+    Object.keys(selectedAttributes.value).forEach((key) => {
+      selectedAttributes.value[key] = null;
+    });
+  };
 
   const loadProduct = async (productId) => {
     try {
@@ -42,7 +67,7 @@ export function useProduct() {
         .eq('id', productId)
         .single();
       if (error) throw error;
-      return product;
+      selectedProduct.value = product;
     } catch (e) {
       console.error(e);
     }
@@ -92,28 +117,9 @@ export function useProduct() {
     }
   };
 
-  const retrieveMaterialAttributes = async (productName) => {
-    try {
-      let query = supabase.from('MaterialsAttributes').select(
-        `
-        id,
-        attribute_type,
-        product_filter,
-        attribute_option,
-        attribute_code,
-        add_on_price,
-        promo_code,
-        discount,
-        images,
-        promotion_details
-      `,
-      );
-      if (productName) query = query.eq('product_filter', productName);
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    } catch (e) {
-      console.error(e);
+  const updateSelectedProduct = (event) => {
+    if (typeof event !== 'string') {
+      selectedProduct.value = event;
     }
   };
 
@@ -132,78 +138,6 @@ export function useProduct() {
       materialAttributes.value = [];
     } finally {
       appStore.setLoading(false);
-    }
-  };
-
-  const retrieveAttributes = async (
-    attributeType = null,
-    productFilter = null,
-    materialFilter = null,
-    sizeFilter = null,
-    featureFilter = null,
-    featureCategoryFilter = null,
-    colorTonesFilter = null,
-  ) => {
-    try {
-      let query = supabase
-        .from('Attributes')
-        .select(
-          `id, attribute_type, attribute_option, add_on_price, attribute_code, code_identifier, product_filter, material_filter, size_filter, feature_filter, feature_category_filter, color_tones_filter`,
-        );
-      if (attributeType) query = query.eq('attribute_type', attributeType);
-      if (productFilter)
-        query = query.or(
-          `product_filter.ilike."${productFilter.replace(/"/g, '\\"')}",` +
-            `product_filter.ilike."%${productFilter.replace(/"/g, '\\"')},%",` +
-            `product_filter.ilike."%, ${productFilter.replace(/"/g, '\\"')}%",` +
-            `product_filter.ilike."%, ${productFilter.replace(/"/g, '\\"')},%",` +
-            `product_filter.is.null`,
-        );
-      if (materialFilter)
-        query = query.or(
-          `material_filter.ilike."${materialFilter.replace(/"/g, '\\"')}",` +
-            `material_filter.ilike."%${materialFilter.replace(/"/g, '\\"')},%",` +
-            `material_filter.ilike."%, ${materialFilter.replace(/"/g, '\\"')}%",` +
-            `material_filter.ilike."%, ${materialFilter.replace(/"/g, '\\"')},%",` +
-            `material_filter.is.null`,
-        );
-      if (sizeFilter)
-        query = query.or(
-          `size_filter.ilike."${sizeFilter.replace(/"/g, '\\"')}",` +
-            `size_filter.ilike."%${sizeFilter.replace(/"/g, '\\"')},%",` +
-            `size_filter.ilike."%, ${sizeFilter.replace(/"/g, '\\"')}%",` +
-            `size_filter.ilike."%, ${sizeFilter.replace(/"/g, '\\"')},%",` +
-            `size_filter.is.null`,
-        );
-      if (featureFilter)
-        query = query.or(
-          `feature_filter.ilike."${featureFilter.replace(/"/g, '\\"')}",` +
-            `feature_filter.ilike."%${featureFilter.replace(/"/g, '\\"')},%",` +
-            `feature_filter.ilike."%, ${featureFilter.replace(/"/g, '\\"')}%",` +
-            `feature_filter.ilike."%, ${featureFilter.replace(/"/g, '\\"')},%",` +
-            `feature_filter.is.null`,
-        );
-      if (featureCategoryFilter)
-        query = query.or(
-          `feature_category_filter.ilike."${featureCategoryFilter.replace(/"/g, '\\"')}",` +
-            `feature_category_filter.ilike."%${featureCategoryFilter.replace(/"/g, '\\"')},%",` +
-            `feature_category_filter.ilike."%, ${featureCategoryFilter.replace(/"/g, '\\"')}%",` +
-            `feature_category_filter.ilike."%, ${featureCategoryFilter.replace(/"/g, '\\"')},%",` +
-            `feature_category_filter.is.null`,
-        );
-      if (colorTonesFilter)
-        query = query.or(
-          `color_tones_filter.ilike."${colorTonesFilter.replace(/"/g, '\\"')}",` +
-            `color_tones_filter.ilike."%${colorTonesFilter.replace(/"/g, '\\"')},%",` +
-            `color_tones_filter.ilike."%, ${colorTonesFilter.replace(/"/g, '\\"')}%",` +
-            `color_tones_filter.ilike."%, ${colorTonesFilter.replace(/"/g, '\\"')},%",` +
-            `color_tones_filter.is.null`,
-        );
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
-    } catch (e) {
-      console.error(e);
     }
   };
 
@@ -383,165 +317,6 @@ export function useProduct() {
     }
   };
 
-  const generateProductVariations = async (
-    product,
-    currentMaterial = null,
-    salesPrices = null,
-    companyPrices = null,
-  ) => {
-    const basePrice = product.base_price_dealer;
-    const baseName = product.product;
-    const formula = product.code_formula;
-
-    let materialAttributes = await retrieveMaterialAttributes(product.product);
-    const attributes = await retrieveAttributes(
-      null,
-      product.product ?? null,
-      null,
-      product.size ?? null,
-      product.feature_type ?? null,
-      product.fire_feature_category ?? null,
-      product.color_tones ?? null,
-    );
-
-    const placeholders = formula.match(/{(.*?)}/g)?.map((p) => p.replace(/[{}]/g, '')) || [];
-    const groupedVariations = {};
-
-    if (currentMaterial && currentMaterial.attribute_option) {
-      materialAttributes = materialAttributes.filter(
-        (material) => material.attribute_option === currentMaterial.attribute_option,
-      );
-    }
-
-    materialAttributes.forEach((material) => {
-      const materialCode = material?.attribute_code || '';
-      const materialOption = material?.attribute_option || '';
-      const materialAddOnPrice = material?.add_on_price || 0;
-
-      let materialBaseSKU = formula;
-      if (placeholders.includes('MAT')) {
-        materialBaseSKU = materialBaseSKU.replace('{MAT}', materialCode);
-      }
-
-      const filteredAttributes = attributes.filter((attr) => {
-        const materialFilters = attr.material_filter?.split(',').map((filter) => filter.trim());
-        return !attr.material_filter || materialFilters.includes(materialOption);
-      });
-
-      const combinations = generateCombinations(
-        placeholders,
-        filteredAttributes,
-        materialBaseSKU,
-        basePrice + materialAddOnPrice,
-        baseName,
-        materialOption,
-      );
-
-      console.log(salesPrices);
-      console.log(companyPrices);
-
-      const combinedTiers = {
-        ...companyPrices,
-        ...salesPrices,
-      };
-
-      const combinationsWithPrice = combinations.map((combination) => {
-        let combinationResult = {
-          ...combination,
-          prices: {},
-        };
-
-        Object.keys(combinedTiers).forEach((tierName) => {
-          if (tierName === 'companyCost' && !Array.isArray(combinedTiers[tierName])) {
-            if (combinedTiers[tierName].show_to_roles.includes(currentRole)) {
-              combinationResult.prices['companyCost'] = evaluateFormula(
-                combinedTiers[tierName].formula,
-                {
-                  basePrice: combination.Price,
-                },
-              );
-            }
-          } else {
-            if (combinedTiers[tierName].length > 0) {
-              if (combinedTiers[tierName][0].show_to_roles.includes(currentRole)) {
-                combinationResult.prices[tierName] = evaluateFormula(
-                  combinedTiers[tierName][0].formula,
-                  {
-                    basePrice: combination.Price,
-                  },
-                );
-              }
-            }
-          }
-        });
-
-        delete combinationResult.Price;
-        return combinationResult;
-      });
-
-      if (!groupedVariations[materialOption]) {
-        groupedVariations[materialOption] = {};
-      }
-
-      groupedVariations[materialOption] = {
-        price_columns: Object.keys(combinedTiers),
-        combinations: combinationsWithPrice,
-      };
-    });
-
-    return groupedVariations;
-  };
-
-  const generateCombinations = (
-    placeholders,
-    attributes,
-    baseSKU,
-    basePrice,
-    baseName,
-    materialOption,
-  ) => {
-    const attributeGroups = placeholders.reduce((acc, placeholder) => {
-      acc[placeholder] = attributes.filter((attr) => attr.code_identifier === placeholder);
-      return acc;
-    }, {});
-
-    const allCombinations = [];
-
-    function generateRecursive(currentSKU, currentPrice, currentName, remainingPlaceholders) {
-      if (remainingPlaceholders.length === 0) {
-        allCombinations.push({
-          SKU: currentSKU,
-          Price: currentPrice,
-          Name: currentName,
-        });
-        return;
-      }
-
-      const [currentPlaceholder, ...restPlaceholders] = remainingPlaceholders;
-      const options = attributeGroups[currentPlaceholder] || [];
-
-      if (options.length > 0) {
-        options.forEach((option) => {
-          const newSKU = currentSKU.replace(`{${currentPlaceholder}}`, option.attribute_code || '');
-          const newPrice = currentPrice + (option.add_on_price || 0);
-          const newName = `${currentName} - ${option.attribute_option}`;
-          generateRecursive(newSKU, newPrice, newName, restPlaceholders);
-        });
-      } else {
-        const newSKU = currentSKU.replace(`{${currentPlaceholder}}`, '');
-        generateRecursive(newSKU, currentPrice, currentName, restPlaceholders);
-      }
-    }
-
-    generateRecursive(
-      baseSKU,
-      basePrice,
-      `${baseName} - ${materialOption}`,
-      Object.keys(attributeGroups),
-    );
-    return allCombinations;
-  };
-
   const retrieveAnnouncementsLength = async () => {
     try {
       appStore.setLoading(true);
@@ -583,6 +358,45 @@ export function useProduct() {
     }
   };
 
+  const calculateSelectedAddons = () => {
+    Object.keys(addOns.value).forEach((key) => {
+      if (addOns.value[key].length > 0) {
+        selectedAddons.value[textToKey(key)] = addOns.value[key].find(
+          (addon) => addon?.attribute_option === 'None',
+        );
+      }
+    });
+  };
+
+  const currentConfigurationSKU = computed(() => {
+    let baseSKU = '';
+    if (selectedProduct.value?.code_formula) {
+      const placeholders =
+        selectedProduct.value.code_formula.match(/{(.*?)}/g)?.map((p) => p.replace(/[{}]/g, '')) ||
+        [];
+      baseSKU = selectedProduct.value.code_formula;
+      if (placeholders.includes('MAT')) {
+        baseSKU = baseSKU.replace('{MAT}', selectedMaterial.value?.attribute_code ?? '');
+      }
+      Object.keys(selectedAttributes.value).forEach((key) => {
+        if (
+          selectedAttributes.value[key] &&
+          selectedAttributes.value[key].code_identifier &&
+          placeholders.includes(selectedAttributes.value[key].code_identifier)
+        ) {
+          baseSKU = baseSKU.replace(
+            `{${selectedAttributes.value[key].code_identifier}}`,
+            selectedAttributes.value[key]?.attribute_code ?? '',
+          );
+        }
+      });
+    }
+    return baseSKU
+      .replace(/\{[^}]*\}/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  });
+
   return {
     products,
     materialAttributes,
@@ -591,13 +405,25 @@ export function useProduct() {
     addOns,
     announcements,
     announcementsLength,
+    selectedProduct,
+    selectedAddons,
+    selectedMaterial,
+    promotionApplied,
+    selectedAttributes,
+    currentConfigurationSKU,
     loadProducts,
     loadProduct,
     loadMaterialAttributes,
     loadAttributes,
     loadAllAddons,
-    generateProductVariations,
     loadAnnouncements,
     retrieveAnnouncementsLength,
+    updateSelectedProduct,
+    setSelectedAddons,
+    calculateSelectedAddons,
+    setSelectedMaterial,
+    setPromotionApplied,
+    setSelectedAttributes,
+    cleanSelectedAttributes,
   };
 }
