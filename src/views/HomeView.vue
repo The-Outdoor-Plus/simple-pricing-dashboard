@@ -119,7 +119,13 @@
                   {{ slotProps.option.attribute_option }}
                   {{
                     slotProps?.option?.add_on_price
-                      ? `(+${formatPrice(calculateRetailPrice(slotProps?.option?.add_on_price, 'MAP'))})`
+                      ? `(+${formatPrice(evaluateFormula(
+                        salesPriceTiers['MAP']?.[0]?.formula ??
+                        companyPriceTiers['MAP']?.[0]?.formula,
+                        {
+                          basePrice: slotProps?.option?.add_on_price
+                        }
+                      ))})`
                       : ''
                   }}
                 </template>
@@ -128,18 +134,24 @@
           </template>
         </div>
       </div>
+      <!--
+        ------------------------------------------------------------
+        SALES VIEW
+        ------------------------------------------------------------
+      -->
       <div v-if="
         !showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole) &&
         selectedProduct &&
         selectedProduct.product
       " class="col-span-5 w-full flex flex-col gap-y-6">
+        <!-- SALES VIEW -->
         <div v-if="currentConfigurationSKU" class="flex flex-row md:flex-col items-center justify-center mb-4">
           <h3 class="text-xl font-bold text-red-600 mr-2">SKU:</h3>
           <span class="text-2xl">
             {{ currentConfigurationSKU }}
           </span>
         </div>
-
+        <!-- GALLERY -->
         <div v-if="selectedMaterial && currentImages.length > 0" class="w-full flex justify-center">
           <Galleria :value="currentImages" :key="currentImages.length
             ? `${selectedProduct?.product}-${selectedMaterial.attribute_option}-${currentImages[0].label}`
@@ -162,110 +174,119 @@
             </template>
           </Galleria>
         </div>
-        <div class="">
-          <h3 class="text-2xl text-blue-900 font-medium">
-            Dealer Price:
-            <span class="text-3xl text-black font-semibold">
-              {{ formatPrice(calculatePrice(getTotalDealerPrice(), 'DEALER')) }}
-            </span>
-          </h3>
-        </div>
+        <!-- SALES VIEW -->
         <div>
           <h3 class="text-2xl text-blue-900 font-medium">Accounts Cost</h3>
           <Divider />
         </div>
+        <!-- SALES VIEW -->
         <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-6 lg:gap-y-8">
-          <template v-for="(card, i) in accountPriceCards" :key="i">
-            <div v-if="
-              !card.rolesToExclude.includes(
-                userStore?.currentRole ? userStore?.currentRole : userStore?.currentCompanyRole,
-              )
-            " :id="`flip-card-${card.id}`" class="flip-card hover:cursor-pointer">
-              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-3 lg:mb-12">
-                <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${card.id}`)">
-                  <template #title>
-                    <div class="text-center">{{ card.label }} Price</div>
-                  </template>
-                  <template #footer>
-                    <div class="flex gap-4 mt-1">
-                      <Button :label="`Show ${card.label} Price`" severity="contrast" variant="outlined" class="w-full"
-                        @click.prevent="flipCard(`flip-card-${card.id}`)" />
-                    </div>
-                  </template>
-                </Card>
-                <Card class="flip-card__back absolute top-0 right-0 left-0" @click="unflipCard(`flip-card-${card.id}`)">
-                  <template #header>
-                    <div class="w-full text-center pt-6 text-2xl font-semibold">
-                      {{ formatPrice(calculatePrice(getTotalDealerPrice(), card.account)) }}
-                    </div>
-                  </template>
-                  <template #title>
-                    <div class="text-center">{{ card.label }} Price</div>
-                  </template>
-                  <template #content>
-                    <p class="text-lg text-center italic font-bold">
-                      <!-- <FormulaDisplay :formula="card.formula" /> -->
-                      {{
-                        calculatePercentage(
-                          calculatePrice(getTotalDealerPrice(), card.account),
-                          getTotalDealerPrice(),
-                        )
-                      }}
-                    </p>
-                  </template>
-                </Card>
+          <template v-for="(tierPrice, name) in salesPriceTiers" :key="name">
+            <template v-if="tierPrice.every((tier) => tier.show_as === 'account_price')">
+              <div :id="`flip-card-${name}`" class="flip-card hover:cursor-pointer">
+                <div
+                  class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-3 lg:mb-12">
+                  <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${name}`)">
+                    <template #title>
+                      <div class="text-center">{{ name }} Price</div>
+                    </template>
+                    <template #footer>
+                      <div class="flex gap-4 mt-1">
+                        <Button :label="`Show ${name} Price`" severity="contrast" variant="outlined" class="w-full"
+                          @click.prevent="flipCard(`flip-card-${name}`)" />
+                      </div>
+                    </template>
+                  </Card>
+                  <Card class="flip-card__back absolute top-0 right-0 left-0" @click="unflipCard(`flip-card-${name}`)">
+                    <template #header>
+                      <div class="w-full text-center pt-6 text-2xl font-semibold">
+                        {{ formatPrice(evaluateFormula(tierPrice.find((tier) => tier.name === name)?.formula, {
+                          basePrice: getTotalDealerPrice()
+                        })) }}
+                      </div>
+                    </template>
+                    <template #title>
+                      <div class="text-center">{{ name }} Price</div>
+                    </template>
+                    <template #content>
+                      <p class="text-lg text-center italic font-bold">
+                        <!-- <FormulaDisplay :formula="card.formula" /> -->
+                        {{
+                          calculatePercentage(
+                            evaluateFormula(tierPrice.find((tier) => tier.name === name)?.formula, {
+                              basePrice: getTotalDealerPrice()
+                            }),
+                            getTotalDealerPrice(),
+                          )
+                        }}
+                      </p>
+                    </template>
+                  </Card>
+                </div>
               </div>
-            </div>
+            </template>
           </template>
         </div>
+        <!-- SALES VIEW -->
         <div>
           <h3 class="text-2xl text-blue-900 font-medium">Retail Price</h3>
           <Divider />
         </div>
         <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-8">
-          <template v-for="(card, i) in retailPriceCards" :key="i">
-            <div :id="`flip-card-${card.id}`" class="flip-card hover:cursor-pointer">
-              <div class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-8 lg:mb-14">
-                <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${card.id}`)">
-                  <template #title>
-                    <div class="text-center">{{ card.label }} Price</div>
-                  </template>
-                  <template #footer>
-                    <div class="flex gap-4 mt-1">
-                      <Button :label="`Show ${card.label} Price`" severity="contrast" variant="outlined" class="w-full"
-                        @click.prevent="flipCard(`flip-card-${card.id}`)" />
-                    </div>
-                  </template>
-                </Card>
-                <Card class="flip-card__back absolute top-0 right-0 left-0" @click="unflipCard(`flip-card-${card.id}`)">
-                  <template #header>
-                    <div class="w-full text-center pt-6 text-2xl font-semibold">
-                      {{ formatPrice(calculateRetailPrice(getTotalDealerPrice(), card.account)) }}
-                    </div>
-                  </template>
-                  <template #title>
-                    <div class="text-center">{{ card.label }} Price</div>
-                  </template>
-                  <template #content>
-                    <p class="text-lg text-center italic font-bold">
-                      <!-- <FormulaDisplay :formula="card.formula" /> -->
-                      {{
-                        calculatePercentage(
-                          calculateRetailPrice(getTotalDealerPrice(), card.account),
-                          getTotalDealerPrice(),
-                        )
-                      }}
-                      *
-                    </p>
-                    <span class="text-sm">* Percentage for retail price is approximate and is not 100% accurate. It can
-                      vary by &#177;1-3%
-                    </span>
-                  </template>
-                </Card>
+          <template v-for="(tierPrice, name) in salesPriceTiers" :key="name">
+            <template v-if="tierPrice.every((tier) => tier.show_as === 'retail_price')">
+              <div :id="`flip-card-${name}`" class="flip-card hover:cursor-pointer">
+                <div
+                  class="flip-card__content text-center relative p-20 transition-transform duration-700 mb-8 lg:mb-14">
+                  <Card class="flip-card__front absolute top-0 right-0 left-0" @click="flipCard(`flip-card-${name}`)">
+                    <template #title>
+                      <div class="text-center">{{ name }} Price</div>
+                    </template>
+                    <template #footer>
+                      <div class="flex gap-4 mt-1">
+                        <Button :label="`Show ${name} Price`" severity="contrast" variant="outlined" class="w-full"
+                          @click.prevent="flipCard(`flip-card-${name}`)" />
+                      </div>
+                    </template>
+                  </Card>
+                  <Card class="flip-card__back absolute top-0 right-0 left-0" @click="unflipCard(`flip-card-${name}`)">
+                    <template #header>
+                      <div class="w-full text-center pt-6 text-2xl font-semibold">
+                        <!-- {{ formatPrice(calculateRetailPrice(getTotalDealerPrice(), card.account)) }} -->
+                        {{ formatPrice(evaluateFormula(tierPrice.find((tier) => tier.name === name)?.formula, {
+                          basePrice: getTotalDealerPrice()
+                        })) }}
+                      </div>
+                    </template>
+                    <template #title>
+                      <div class="text-center">{{ name }} Price</div>
+                    </template>
+                    <template #content>
+                      <p class="text-lg text-center italic font-bold">
+                        <!-- <FormulaDisplay :formula="card.formula" /> -->
+                        {{
+                          calculatePercentage(
+                            evaluateFormula(tierPrice.find((tier) => tier.name === name)?.formula, {
+                              basePrice: getTotalDealerPrice()
+                            }),
+                            getTotalDealerPrice(),
+                          )
+                        }}
+                        *
+                      </p>
+                      <span class="text-sm">* Percentage for retail price is approximate and is not 100% accurate. It
+                        can
+                        vary by &#177;1-3%
+                      </span>
+                    </template>
+                  </Card>
+                </div>
               </div>
-            </div>
+            </template>
+
           </template>
         </div>
+        <!-- SALES VIEW -->
         <div v-if="getPriceBreakdown.length" class="w-full">
           <h3 class="text-2xl font-bold text-green-600 my-4">Price Breakdown</h3>
           <DataTable :value="getPriceBreakdown" class="w-full" table-style="min-width: 100%;" style="width: 100%">
@@ -279,58 +300,33 @@
                 }}
               </template>
             </Column>
-            <Column header="MAP">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price_map) }}
+            <Column v-for="column in getSalesBreakdownPricesColumns" :key="column">
+              <template #header="slotProps">
+                <div class="flex items-center justify-center font-semibold transition-all duration-300"
+                  :class="{ 'blur-sm': !flippedCards.includes(`flip-card-${column}`) && column !== 'MAP' && column !== 'MSRP' }">
+                  {{ column }}
+                </div>
               </template>
-            </Column>
-            <Column header="MSRP">
               <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price_msrp) }}
-              </template>
-            </Column>
-            <Column header="Dealer Cost">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price) }}
-              </template>
-            </Column>
-            <Column header="Group Cost">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price_group) }}
-              </template>
-            </Column>
-            <Column header="Landscape Cost">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price_landscape) }}
-              </template>
-            </Column>
-            <Column v-if="
-              userStore?.currentRole
-                ? userStore.currentRole !== 'SALES'
-                : userStore?.currentCompanyRole !== 'SALES'
-            " header="Internet Cost">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price_internet) }}
-              </template>
-            </Column>
-            <Column header="Distributor Cost">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price_distributor) }}
-              </template>
-            </Column>
-            <Column header="Master Distributor Cost">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.add_on_price_master_distributor) }}
+                <div class="transition-all duration-300"
+                  :class="{ 'blur-sm': !flippedCards.includes(`flip-card-${column}`) && column !== 'MAP' && column !== 'MSRP' }">
+                  {{ formatPrice(slotProps.data.sales_prices.find((price) => price.name === column)?.price) }}
+                </div>
               </template>
             </Column>
           </DataTable>
         </div>
         <!-- TODO: REMOVE ISAGENT -->
-        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
+        <!-- <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
           <Button label="Add to Cart" icon="pi pi-shopping-cart" severity="success" @click="addToCart" />
-        </div>
+        </div> -->
       </div>
 
+      <!--
+        ------------------------------------------------------------
+        COMPANY VIEW
+        ------------------------------------------------------------
+      -->
       <div v-if="
         selectedProduct &&
         selectedProduct.product &&
@@ -344,39 +340,27 @@
         </div>
         <div class="flex items-center justify-center mb-4">
           <h2 class="text-2xl font-bold mr-2">MAP:</h2>
-          <span v-if="promotionApplied" class="text-lg line-through mr-1">
+          <!-- <span v-if="promotionApplied" class="text-lg line-through mr-1">
             {{ formatPrice(calculateRetailPrice(getTotalDealerPrice(), 'MAP')) }}
-          </span>
-          <span class="text-2xl">{{
-            formatPrice(
-              calculateRetailPrice(
-                getTotalDealerPrice(),
-                'MAP',
-                promotionApplied ? selectedMaterial.discount : 0,
-              ),
-            )
-          }}</span>
+          </span> -->
+          <span class="text-2xl">{{ formatPrice(evaluateFormula(companyPriceTiers['MAP']?.[0]?.formula, {
+            basePrice: getTotalDealerPrice()
+          })) }}</span>
         </div>
         <div class="flex items-center justify-center mb-4">
           <h2 class="text-2xl font-bold mr-2">MSRP:</h2>
           <span v-if="promotionApplied" class="text-lg line-through mr-1">
             {{ formatPrice(calculateRetailPrice(getTotalDealerPrice(), 'MSRP')) }}
           </span>
-          <span class="text-2xl">{{
-            formatPrice(
-              calculateRetailPrice(
-                getTotalDealerPrice(),
-                'MSRP',
-                promotionApplied ? selectedMaterial.discount : 0,
-              ),
-            )
-          }}</span>
+          <span class="text-2xl">{{ formatPrice(evaluateFormula(companyPriceTiers['MSRP']?.[0]?.formula, {
+            basePrice: getTotalDealerPrice()
+          })) }}</span>
         </div>
         <div class="flex items-center justify-center mb-4">
           <h2 class="text-2xl font-bold mr-2">
             {{ userStore?.company?.name || 'Your Company' }} Cost:
           </h2>
-          <span v-if="promotionApplied" class="text-lg line-through mr-1">
+          <!-- <span v-if="promotionApplied" class="text-lg line-through mr-1">
             {{
               formatPrice(
                 calculatePrice(
@@ -385,16 +369,10 @@
                 ),
               )
             }}
-          </span>
-          <span class="text-2xl">{{
-            formatPrice(
-              calculatePrice(
-                getTotalDealerPrice(),
-                userStore?.currentRole ?? userStore?.currentCompanyRole ?? 'MAP',
-                promotionApplied ? selectedMaterial.discount : 0,
-              ),
-            )
-          }}</span>
+          </span> -->
+          <span class="text-2xl">{{ formatPrice(evaluateFormula(companyPriceTiers['companyCost']?.formula, {
+            basePrice: getTotalDealerPrice()
+          })) }}</span>
         </div>
         <div v-if="selectedMaterial && currentImages.length > 0" class="w-full flex justify-center">
           <Galleria :value="currentImages" :key="currentImages.length
@@ -419,32 +397,7 @@
           </Galleria>
         </div>
         <div v-if="getPriceBreakdown.length">
-          <div v-if="showPromotion">
-            <Divider />
-            <div class="text-lg text-red-500">
-              This product is currently part of an ongoing promotion.
-            </div>
-            <div class="text-lg">
-              Promo Code:
-              <span class="text-xl text-green-600"> {{ selectedMaterial.promo_code }} </span>
-            </div>
-            <div class="text-lg">
-              Discount:
-              <span class="text-xl text-green-600">
-                {{ Number(selectedMaterial.discount) * 100 }}%
-              </span>
-            </div>
-            <div v-if="selectedMaterial.promotion_details">
-              Promotion Details: {{ selectedMaterial.promotion_details }}
-            </div>
-            <Button v-show="!promotionApplied" label="Apply Promotion" severity="success" class="mt-3"
-              @click="applyPromotion"></Button>
-            <Button v-show="promotionApplied" label="Promotion Applied" severity="disabled" disabled class="mt-3"
-              @click="applyPromotion"></Button>
-
-            <Divider />
-          </div>
-          <h3 class="text-2xl font-bold text-green-600 my-4">Price Breakdown</h3>
+          <h3 class="text-2xl font-bold text-green-600 mt-6 mb-4">Price Breakdown</h3>
           <DataTable :value="getPriceBreakdown" class="w-full" table-style="min-width: 100%;" style="width: 100%">
             <Column header="Name" style="min-width: 13rem">
               <template #body="slotProps">
@@ -458,110 +411,32 @@
             </Column>
             <Column header="MAP">
               <template #body="slotProps">
-                <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
-                  formatPrice(slotProps.data.add_on_price_map)
-                  }}</span>
-                <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
-                  promotionApplied && slotProps.data?.discount
-                    ? formatPrice(slotProps.data.add_on_price_map * (1 - slotProps.data.discount))
-                    : formatPrice(slotProps.data.add_on_price_map)
+                  formatPrice(slotProps.data.company_prices.find((price) => price.type === 'MAP')?.price)
                 }}
               </template>
             </Column>
             <Column header="MSRP">
               <template #body="slotProps">
-                <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
-                  formatPrice(slotProps.data.add_on_price_msrp)
-                  }}</span>
-                <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
-                  promotionApplied && slotProps.data?.discount
-                    ? formatPrice(slotProps.data.add_on_price_msrp * (1 - slotProps.data.discount))
-                    : formatPrice(slotProps.data.add_on_price_msrp)
+                  formatPrice(slotProps.data.company_prices.find((price) => price.type === 'MSRP')?.price)
                 }}
               </template>
             </Column>
-            <Column v-if="
-              userStore?.currentRole
-                ? userStore.currentRole === 'DEALER'
-                : userStore?.currentCompanyRole === 'DEALER'
-            "
+            <Column
               :header="`${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost`">
               <template #body="slotProps">
-                <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
-                  formatPrice(slotProps.data.add_on_price)
-                  }}</span>
-                <br v-if="promotionApplied && slotProps.data?.discount" />
                 {{
-                  promotionApplied && slotProps.data?.discount
-                    ? formatPrice(slotProps.data.add_on_price * (1 - slotProps.data.discount))
-                    : formatPrice(slotProps.data.add_on_price)
+                  formatPrice(slotProps.data.company_prices.find((price) => price.show_as === 'account_price')?.price)
                 }}
               </template>
             </Column>
-            <Column v-if="
-              showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole) &&
-              (userStore?.currentRole
-                ? userStore.currentRole !== 'DEALER'
-                : userStore?.currentCompanyRole !== 'DEALER')
-            "
-              :header="`${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost`">
-              <template #body="slotProps">
-                <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
-                  formatPrice(
-                    slotProps.data[
-                    `add_on_price_${userStore?.currentRole
-                      ? userStore.currentRole.toLowerCase()
-                      : userStore.currentCompanyRole.toLowerCase()
-                    }`
-                    ],
-                  )
-                }}</span>
-                <br v-if="promotionApplied && slotProps.data?.discount" />
-                {{
-                  promotionApplied && slotProps.data?.discount
-                    ? formatPrice(
-                      slotProps.data[
-                      `add_on_price_${userStore?.currentRole
-                        ? userStore.currentRole.toLowerCase()
-                        : userStore.currentCompanyRole.toLowerCase()
-                      }`
-                      ] *
-                      (1 - slotProps.data.discount),
-                    )
-                    : formatPrice(
-                      slotProps.data[
-                      `add_on_price_${userStore?.currentRole
-                        ? userStore.currentRole.toLowerCase()
-                        : userStore.currentCompanyRole.toLowerCase()
-                      }`
-                      ],
-                    )
-                }}
-              </template>
-            </Column>
-            <!-- <Column v-if="showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              :header="`${userStore.currentRole ?? userStore.currentCompanyRole ?? userStore?.company?.name ?? 'Your Company'} Cost`">
-              <template #body="slotProps">
-                <span v-if="promotionApplied && slotProps.data?.discount" class="line-through">{{
-                  formatPrice(calculatePrice(slotProps.data.add_on_price,
-                    userStore?.currentRole ?? userStore?.currentCompanyRole ?? 'MAP'
-                  ))
-                }}</span>
-                <br v-if="promotionApplied && slotProps.data?.discount">
-                {{ formatPrice(calculatePrice(slotProps.data.add_on_price,
-                  userStore?.currentRole ?? userStore?.currentCompanyRole ?? 'MAP',
-                  promotionApplied && slotProps.data?.discount ? slotProps.data.discount : 0
-                )) }}
-              </template>
-            </Column> -->
           </DataTable>
         </div>
         <!-- TODO: REMOVE ISAGENT -->
-        <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
+        <!-- <div v-if="getPriceBreakdown.length" class="w-full flex justify-end gap-4 mb-4 mt-4">
           <Button label="Add to Cart" icon="pi pi-shopping-cart" severity="success" @click="addToCart" />
-        </div>
+        </div> -->
       </div>
     </div>
 
@@ -572,7 +447,7 @@
       </iframe>
     </div>
 
-    <div v-if="selectedProduct && selectedProduct.product" class="self-start w-full flex items-center justify-between">
+    <div v-if="showProductVariationsTable" class="self-start w-full flex items-center justify-between">
       <h2 class="self-start text-orange-900 text-lg font-semibold">
         {{ selectedProduct.product }} Part Numbers
       </h2>
@@ -599,12 +474,7 @@
         </template>
       </Column>
     </DataTable>
-    <Tabs v-if="
-      selectedProduct &&
-      selectedProduct.product &&
-      productVariations &&
-      Object.keys(productVariations).length > 0
-    " :value="0" scrollable class="w-full">
+    <Tabs v-if="showProductVariationsTable" :value="0" scrollable class="w-full">
       <TabList>
         <Tab v-for="(values, key, index) in productVariations" :key="key" :value="index">
           {{ key }}
@@ -613,8 +483,8 @@
       <TabPanels>
         <TabPanel v-for="(values, key, index) in productVariations" :key="`${key}-table`" :value="index">
           <!-- {{ values }} -->
-          <DataTable :value="values" table-style="min-width: 100%;" striped-rows
-            :virtualScrollerOptions="{ itemSize: 75 }" scrollable scroll-height="500px">
+          <DataTable :value="values.combinations" table-style="min-width: 100%;" striped-rows
+            :virtualScrollerOptions="{ itemSize: 75 }" scrollable scroll-height="500px" :key="`${key}-data-table`">
             <Column header="Product Name" style="min-width: 12rem">
               <template #body="slotProps">
                 {{ selectedProduct.product }}
@@ -622,101 +492,45 @@
             </Column>
             <Column field="Name" header="Variation Name" style="min-width: 15rem"></Column>
             <Column field="SKU" header="SKU" style="min-width: 15rem"></Column>
-            <Column field="Price" header="MAP">
+            <Column v-for="(column_name) in values.price_columns" :key="`${column_name}-col`" field="prices"
+              :header="column_name === 'companyCost' ? `${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost` : column_name">
               <template #body="slotProps">
-                {{ formatPrice(calculateRetailPrice(slotProps.data.Price, 'MAP')) }}
-              </template>
-            </Column>
-            <Column field="Price" header="MSRP">
-              <template #body="slotProps">
-                {{ formatPrice(calculateRetailPrice(slotProps.data.Price, 'MSRP')) }}
-              </template>
-            </Column>
-            <Column v-if="showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)" field="Price"
-              :header="`${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost`">
-              <template #body="slotProps">
-                {{
-                  formatPrice(
-                    calculatePrice(
-                      slotProps.data.Price,
-                      userStore.currentRole ?? userStore.currentCompanyRole ?? 'MAP',
-                    ),
-                  )
-                }}
-              </template>
-            </Column>
-            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)" header="Dealer Cost">
-              <template #body="slotProps">
-                {{ formatPrice(calculatePrice(slotProps.data.Price, 'DEALER')) }}
-              </template>
-            </Column>
-            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)" header="Group Cost">
-              <template #body="slotProps">
-                {{ formatPrice(calculatePrice(slotProps.data.Price, 'GROUP')) }}
-              </template>
-            </Column>
-            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Landscape Cost">
-              <template #body="slotProps">
-                {{ formatPrice(calculatePrice(slotProps.data.Price, 'LANDSCAPE')) }}
-              </template>
-            </Column>
-            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Internet Cost">
-              <template #body="slotProps">
-                {{ formatPrice(calculatePrice(slotProps.data.Price, 'INTERNET')) }}
-              </template>
-            </Column>
-            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Distributor Cost">
-              <template #body="slotProps">
-                {{ formatPrice(calculatePrice(slotProps.data.Price, 'DISTRIBUTOR')) }}
-              </template>
-            </Column>
-            <Column v-if="!showRolePrice(userStore?.currentRole ?? userStore?.currentCompanyRole)"
-              header="Master Distributor Cost">
-              <template #body="slotProps">
-                {{ formatPrice(calculatePrice(slotProps.data.Price, 'MASTER_DISTRIBUTOR')) }}
+                {{ formatPrice(slotProps.data.prices[column_name]) }}
               </template>
             </Column>
           </DataTable>
         </TabPanel>
       </TabPanels>
     </Tabs>
-    <div v-if="
-      selectedProduct &&
-      selectedProduct.product &&
-      productVariations &&
-      Object.keys(productVariations).length > 0
-    " class="w-full flex justify-end mr-2">
+    <div v-if="showProductVariationsTable" class="w-full flex justify-end mr-2">
       <Button label="Download CSV" icon="pi pi-download" severity="info" @click="generateCSV" />
     </div>
   </div>
 </template>
 
 <script setup>
-import FormulaDisplay from '@/components/FormulaDisplay.vue';
-import { computed, onMounted, ref, watch, onBeforeUnmount, nextTick } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useProduct } from '@/composables/product';
 import {
   showRolePrice,
   calculatePrice,
   calculateRetailPrice,
   calculatePercentage,
-  addSign,
 } from '@/utils';
 import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
 import { useCartStore } from '@/store/cart';
 import { useRouter, useRoute } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
+import { useUtils } from '@/composables/utils';
+import { evaluateFormula } from '@/utils/formulaEvaluator';
 
 const toast = useToast();
 const selectedProduct = ref();
 const filteredProductsList = ref();
 const eventQuery = ref('');
 const selectedMaterial = ref();
-const productVariations = ref();
+const productVariations = ref({});
 const currentDealerPrice = ref({
   dealer_price: 0,
   material: 0,
@@ -736,59 +550,6 @@ const responsiveOptions = ref([
 ]);
 
 const promotionApplied = ref(false);
-
-const accountPriceCards = ref([
-  {
-    id: 'master-distributor',
-    label: 'Master Distributor',
-    account: 'MASTER_DISTRIBUTOR',
-    formula: '\\text{CEIL}(\\text{DealerPrice} \\times 0.8)',
-    rolesToExclude: [],
-  },
-  {
-    id: 'distributor',
-    label: 'Distributor',
-    account: 'DISTRIBUTOR',
-    formula: '\\text{CEIL}(\\text{DealerPrice} \\times 0.85)',
-    rolesToExclude: [],
-  },
-  {
-    id: 'group',
-    label: 'Group',
-    account: 'GROUP',
-    formula: '\\text{CEIL}(\\text{DealerPrice} \\times 0.92)',
-    rolesToExclude: [],
-  },
-  {
-    id: 'internet',
-    label: 'Internet',
-    account: 'INTERNET',
-    formula: '\\text{CEIL}(\\text{DealerPrice} \\times 1.1)',
-    rolesToExclude: ['SALES'],
-  },
-  {
-    id: 'landscape',
-    label: 'Landscape',
-    account: 'LANDSCAPE',
-    formula: '\\text{CEIL}(\\text{DealerPrice} \\times 1.2)',
-    rolesToExclude: [],
-  },
-]);
-
-const retailPriceCards = ref([
-  {
-    id: 'map',
-    label: 'MAP',
-    account: 'MAP',
-    formula: '\\text{CEIL}(\\text{CEIL}(\\text{DealerPrice} \\times 0.92) \\times 2)',
-  },
-  {
-    id: 'msrp',
-    label: 'MSRP',
-    account: 'MSRP',
-    formula: '\\text{CEIL}(\\text{CEIL}(\\text{DealerPrice} \\times 0.92) \\times 2.2)',
-  },
-]);
 
 const {
   products,
@@ -812,6 +573,7 @@ const router = useRouter();
 const route = useRoute();
 const productQueryId = ref(route.query.product);
 const productQuerySearch = ref(route.query.s);
+const { getPricesTiers, salesPriceTiers, companyPriceTiers } = useUtils();
 
 const currentProduct = computed(() => {
   // return products.value.find((product) => product.id === selectedProduct.value?.id);
@@ -904,6 +666,22 @@ const getAddons = computed(() => {
     .filter((addon) => addon.attribute_option !== 'None')
     .map((addon) => ({
       ...addon,
+      company_prices: Object.values(companyPriceTiers.value).flat().map((tier) => {
+        return {
+          ...tier,
+          price: evaluateFormula(tier.formula, {
+            basePrice: addon.add_on_price
+          })
+        }
+      }),
+      sales_prices: Object.values(salesPriceTiers.value).flat().map((tier) => {
+        return {
+          ...tier,
+          price: evaluateFormula(tier.formula, {
+            basePrice: addon.add_on_price
+          })
+        }
+      }),
       add_on_price_group: calculatePrice(addon.add_on_price, 'GROUP'),
       add_on_price_landscape: calculatePrice(addon.add_on_price, 'LANDSCAPE'),
       add_on_price_internet: calculatePrice(addon.add_on_price, 'INTERNET'),
@@ -914,11 +692,34 @@ const getAddons = computed(() => {
     }));
 });
 
+const getSalesBreakdownPricesColumns = computed(() => {
+  const priority = { 'MAP': 0, 'MSRP': 1 };
+  return getPriceBreakdown.value.reduce((acc, item) => {
+    return Array.from(new Set([...acc, ...item.sales_prices.map((price) => price.name)]));
+  }, []).sort((a, b) => (priority[a] ?? 2) - (priority[b] ?? 2));
+})
+
 const getPriceBreakdown = computed(() => {
   const priceBreakdown = [];
   if (selectedProduct.value && selectedProduct.value.base_price_dealer) {
     priceBreakdown.push({
       attribute_option: `Selected configuration for: ${selectedProduct.value.product}`,
+      company_prices: Object.values(companyPriceTiers.value).flat().map((tier) => {
+        return {
+          ...tier,
+          price: evaluateFormula(tier.formula, {
+            basePrice: getTotalDealerPrice()
+          })
+        }
+      }),
+      sales_prices: Object.values(salesPriceTiers.value).flat().map((tier) => {
+        return {
+          ...tier,
+          price: evaluateFormula(tier.formula, {
+            basePrice: getTotalDealerPrice()
+          })
+        }
+      }),
       add_on_price: calculatePrice(getTotalDealerPrice(), 'DEALER'),
       add_on_price_group: calculatePrice(getTotalDealerPrice(), 'GROUP'),
       add_on_price_landscape: calculatePrice(getTotalDealerPrice(), 'LANDSCAPE'),
@@ -934,8 +735,36 @@ const getPriceBreakdown = computed(() => {
     });
     if (getAddons.value.length > 0) priceBreakdown.push(...getAddons.value);
   }
+
+  const totalCompanyPricesMap = new Map();
+  const totalSalesPricesMap = new Map();
+
+  for (const product of priceBreakdown) {
+    for (const priceTier of product.company_prices) {
+      if (!totalCompanyPricesMap.has(priceTier.type)) {
+        totalCompanyPricesMap.set(priceTier.type, {
+          ...priceTier,
+          price: 0,
+        });
+      }
+      totalCompanyPricesMap.get(priceTier.type).price += priceTier.price;
+    }
+
+    for (const priceTier of product.sales_prices) {
+      if (!totalSalesPricesMap.has(priceTier.name)) {
+        totalSalesPricesMap.set(priceTier.name, {
+          ...priceTier,
+          price: 0,
+        });
+      }
+      totalSalesPricesMap.get(priceTier.name).price += priceTier.price;
+    }
+  }
+
   const total = {
     attribute_option: 'Total',
+    company_prices: Array.from(totalCompanyPricesMap.values()),
+    sales_prices: Array.from(totalSalesPricesMap.values()),
     add_on_price: priceBreakdown.reduce(
       (acc, item) =>
         acc + (item?.discount ? item.add_on_price * (1 - item.discount) : item.add_on_price),
@@ -996,7 +825,6 @@ const onProductSelect = async () => {
 const loadProductInformation = async () => {
   try {
     selectedMaterial.value = null;
-    productVariations.value = {};
     await loadMaterialAttributes(selectedProduct.value.product);
     materialAttributes.value.length > 0
       ? (selectedMaterial.value = materialAttributes.value[0])
@@ -1013,7 +841,13 @@ const loadProductVariations = async () => {
   try {
     appStore.setLoading(true);
     isVariationTableLoading.value = true;
-    let newProductVariations = await generateProductVariations(selectedProduct.value);
+    const { salesPrices, companyPrices } = await getPricesTiers();
+    let newProductVariations = await generateProductVariations(
+      selectedProduct.value,
+      null,
+      salesPrices,
+      companyPrices,
+    );
     // let newProductVariations = await generateProductVariations(selectedProduct.value, selectedMaterial.value);
     // productVariations.value = { ...productVariations.value, ...newProductVariations };
     productVariations.value = newProductVariations;
@@ -1024,6 +858,10 @@ const loadProductVariations = async () => {
     appStore.setLoading(false);
   }
 };
+
+const showProductVariationsTable = computed(() => {
+  return !!(selectedProduct.value && selectedProduct.value.product && productVariations.value && Object.keys(productVariations.value).length > 0);
+});
 
 const currentSpecificationSheets = computed(() => {
   return selectedProduct.value?.specification_sheet.split(',').map((sheet) => ({
@@ -1136,53 +974,30 @@ const currentConfigurationName = computed(() => {
 
 const generateCSV = () => {
   appStore.setLoading(true);
-  const allRows = Object.values(productVariations.value).flat();
+  const allRows = Object.values(productVariations.value).flat().flatMap((variation) => variation.combinations);
 
   const rows = allRows.map((row) => {
+    console.log(row);
+    const newPrices = Object.keys(row.prices).reduce((acc, key) => {
+      let newKey = '';
+      if (key === 'companyCost') {
+        newKey = 'Your Company Cost';
+      } else {
+        newKey = `${key} Price`;
+      }
+      acc[newKey] = row.prices[key];
+      return acc;
+    }, {});
+
     let newRow = {
       SKU: row.SKU,
       Name: row.Name,
       'Base Product Name': selectedProduct.value.product,
-    }
-
-    const costHeaderName = userStore?.isAgent || userStore?.currentRole === 'ADMIN' ? null : 'Your Company Cost';
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'DEALER')) {
-      newRow[costHeaderName ? costHeaderName : 'DEALER Price'] = calculatePrice(row.Price, 'DEALER');
-    }
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'INTERNET')) {
-      newRow[costHeaderName ? costHeaderName : 'INTERNET Price'] = calculatePrice(row.Price, 'INTERNET');
-    }
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'MASTER_DISTRIBUTOR')) {
-      newRow[costHeaderName ? costHeaderName : 'MASTER_DISTRIBUTOR Price'] = calculatePrice(row.Price, 'MASTER_DISTRIBUTOR');
-    }
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'DISTRIBUTOR')) {
-      newRow[costHeaderName ? costHeaderName : 'DISTRIBUTOR Price'] = calculatePrice(row.Price, 'DISTRIBUTOR');
-    }
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'GROUP')) {
-      newRow[costHeaderName ? costHeaderName : 'GROUP Price'] = calculatePrice(row.Price, 'GROUP');
-    }
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'LANDSCAPE')) {
-      newRow[costHeaderName ? costHeaderName : 'LANDSCAPE Price'] = calculatePrice(row.Price, 'LANDSCAPE');
-    }
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'MAP')) {
-      newRow['MAP'] = calculateRetailPrice(row.Price, 'MAP');
-    }
-
-    if (isRolePriceAllowed(userStore?.currentRole, 'MSRP')) {
-      newRow['MSRP'] = calculateRetailPrice(row.Price, 'MSRP');
+      ...newPrices,
     }
 
     return newRow;
   });
-
-  console.log('Rows', rows);
 
   const headers = Object.keys(rows[0]);
 
@@ -1238,13 +1053,19 @@ onMounted(async () => {
     await loadProducts(productQuerySearch.value);
   }
   await retrieveAnnouncementsLength();
+  const { salesPrices, companyPrices } = await getPricesTiers();
+  salesPriceTiers.value = salesPrices;
+  companyPriceTiers.value = companyPrices;
 });
+
+const flippedCards = ref([]);
 
 const flipCard = (id) => {
   const element = document.getElementById(id);
   if (element && element.children[0]) {
     element.children[0].style = 'transform: rotateY(.5turn)';
   }
+  flippedCards.value.push(id);
 };
 
 const unflipCard = (id) => {
@@ -1252,34 +1073,7 @@ const unflipCard = (id) => {
   if (element && element.children[0]) {
     element.children[0].style = 'transform: rotateY(0turn)';
   }
-};
-
-const showPromotion = computed(
-  () =>
-    !!(
-      selectedMaterial.value &&
-      selectedMaterial.value.promo_code &&
-      selectedMaterial.value.discount &&
-      (userStore?.currentRole
-        ? userStore.currentRole !== 'DISTRIBUTOR'
-        : userStore?.currentCompanyRole !== 'DISTRIBUTOR') &&
-      (userStore?.currentRole
-        ? userStore.currentRole !== 'MASTER_DISTRIBUTOR'
-        : userStore.currentCompanyRole !== 'MASTER_DISTRIBUTOR')
-    ),
-);
-
-const applyPromotion = () => {
-  promotionApplied.value = true;
-};
-
-const navigateToRFQ = () => {
-  router.push({
-    path: '/rfq',
-    query: {
-      items: JSON.stringify(getPriceBreakdown.value),
-    },
-  });
+  flippedCards.value = flippedCards.value.filter((card) => card !== id);
 };
 
 const addToCart = () => {
@@ -1301,22 +1095,6 @@ const addToCart = () => {
     detail: 'Items have been added to your cart',
     life: 3000,
   });
-};
-
-const isRolePriceAllowed = (role, price) => {
-  const priceRoleSwitch = (role) => ({
-    'MASTER_DISTRIBUTOR': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR'],
-    'DISTRIBUTOR': ['MAP', 'MSRP', 'DISTRIBUTOR'],
-    'DEALER': ['MAP', 'MSRP', 'DEALER'],
-    'GROUP': ['MAP', 'MSRP', 'GROUP'],
-    'LANDSCAPE': ['MAP', 'MSRP', 'LANDSCAPE'],
-    'ADMIN': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR', 'DISTRIBUTOR', 'DEALER', 'GROUP', 'LANDSCAPE', 'INTERNET'],
-    'INTERNET': ['MAP', 'MSRP', 'INTERNET'],
-    'SALES': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR', 'DISTRIBUTOR', 'DEALER', 'GROUP', 'LANDSCAPE'],
-    'TOP-SALES': ['MAP', 'MSRP', 'MASTER_DISTRIBUTOR', 'DISTRIBUTOR', 'DEALER', 'GROUP', 'LANDSCAPE', 'INTERNET'],
-  })[role];
-
-  return priceRoleSwitch(role).includes(price);
 };
 </script>
 
