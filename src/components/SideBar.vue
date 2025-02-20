@@ -88,7 +88,8 @@ const menuItems = ref([
     icon: 'pi pi-file-pdf',
     path: '/rfqs',
     children: [],
-    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+    // roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+    roles: ['ADMIN'],
   },
   // {
   //   name: 'Orders',
@@ -125,7 +126,13 @@ const menuItems = ref([
         icon: 'pi pi-envelope',
         path: '/emails',
         roles: ['ADMIN', 'MANAGER'],
-      }
+      },
+      {
+        name: 'Price Tiers',
+        icon: 'pi pi-tag',
+        path: '/price-tiers',
+        roles: ['ADMIN', 'MANAGER'],
+      },
     ],
   },
 ]);
