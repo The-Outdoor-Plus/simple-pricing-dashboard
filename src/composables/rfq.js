@@ -6,11 +6,20 @@ import html2pdf from 'html2pdf.js';
 import { ref } from 'vue';
 import { useUserStore } from '@/store/user';
 
+const rfqEmail = ref(null);
+
+/**
+ * ------------------------------------------------------------
+ * RFQ
+ * TODO: FIX RFQ WITH NEW PRICING FORMULAS, TPIN and DIVISION
+ *
+ * ------------------------------------------------------------
+ */
+
 export function useRfq() {
   const appStore = useAppStore();
   const router = useRouter();
   const toast = useToast();
-  const rfqEmail = ref(null);
   const userStore = useUserStore();
 
   const getInitials = (sentence) => {

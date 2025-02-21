@@ -1,11 +1,13 @@
 import { supabase } from '@/supabase';
 import { ref } from 'vue';
 import { useAppStore } from '@/store/app';
+import { FunctionsHttpError } from '@supabase/supabase-js';
+
+const allowedDomains = ref(['theoutdoorplus.com', 'videlusa.com']);
+const welcomeEmail = ref(null);
 
 export function useUser() {
   const appStore = useAppStore();
-  const allowedDomains = ref(['theoutdoorplus.com', 'videlusa.com']);
-  const welcomeEmail = ref(null);
 
   const loadUserInformation = async (id, columns = '*') => {
     try {
@@ -20,11 +22,19 @@ export function useUser() {
     }
   };
 
-  const verifyCredentials = async (email, password) => {
+  const verifyCredentials = async (email, password, division) => {
     const { data, error } = await supabase.functions.invoke('verify-credentials', {
-      body: { email, password },
+      body: { email, password, division },
     });
-    if (error) throw new Error('Invalid credentials');
+    if (error) {
+      if (error instanceof FunctionsHttpError) {
+        const errorMessage = await error.context.json();
+        throw new Error(errorMessage.message, {
+          cause: errorMessage.error,
+        });
+      }
+      throw new Error('Invalid credentials');
+    }
     return { success: data?.success || false, first_time: data?.first_time || false };
   };
 

@@ -61,6 +61,7 @@ Deno.serve(async (req: Request) => {
       avatar_url,
       first_time,
       email_otp_active,
+      access_to,
     } = await req.json();
 
     if (!user_id || !email || !role || !first_name || !last_name || !company) {
@@ -85,6 +86,7 @@ Deno.serve(async (req: Request) => {
 
     let first_time_local = first_time;
     let email_otp_active_local = email_otp_active;
+    let access_to_local = access_to;
 
     if (first_time === null || first_time === undefined) {
       first_time_local = true;
@@ -92,6 +94,10 @@ Deno.serve(async (req: Request) => {
 
     if (email_otp_active === null || email_otp_active === undefined) {
       email_otp_active_local = true;
+    }
+
+    if (access_to === null || access_to === undefined) {
+      access_to_local = ["The Outdoor Plus"];
     }
 
     const adminSupabaseClient = createClient(
@@ -122,6 +128,7 @@ Deno.serve(async (req: Request) => {
         avatar_url,
         first_time: first_time_local,
         email_otp_active: email_otp_active_local,
+        access_to: access_to_local,
       },
     };
 
@@ -134,6 +141,7 @@ Deno.serve(async (req: Request) => {
       avatar_url,
       first_time: first_time_local,
       email_otp_active: email_otp_active_local,
+      access_to: access_to_local,
     };
 
     if (!password) delete userInformation.password;

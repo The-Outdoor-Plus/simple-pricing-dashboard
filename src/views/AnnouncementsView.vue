@@ -46,13 +46,14 @@
 </template>
 <script setup>
 import { useProduct } from '@/composables/product';
-import { onMounted, ref } from 'vue';
+import { inject, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const visible = ref(false);
 const currentAnnouncement = ref(null);
 
 const router = useRouter();
+const division = inject('projectDivision');
 
 const {
   loadAnnouncements,
@@ -65,6 +66,6 @@ const showDialog = (item) => {
 }
 
 onMounted(async () => {
-  await loadAnnouncements();
+  await loadAnnouncements(division);
 });
 </script>

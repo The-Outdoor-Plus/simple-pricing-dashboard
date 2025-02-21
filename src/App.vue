@@ -1,16 +1,18 @@
 <script setup>
 import logoUrl from '@/assets/top_logo.svg';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, inject } from 'vue';
 import { RouterView, useRoute, useRouter } from 'vue-router';
 import { useUserStore } from './store/user';
 import { useCartStore } from './store/cart';
 import { useAppStore } from './store/app';
+import logoUrlVidel from '@/assets/videl_logo.png';
 
 const userStore = useUserStore();
 const appStore = useAppStore();
 const router = useRouter();
 const route = useRoute();
 const cartStore = useCartStore();
+const projectDivision = inject('projectDivision');
 
 const signOut = async () => {
   await userStore.logout();
@@ -38,7 +40,8 @@ onMounted(async () => {
               <!-- TODO: REMOVE ISAGENT -->
               <Button v-if="userStore.isUserAuthenticated && !userStore.isFirstTime" icon="pi pi-bars" variant="text"
                 severity="contrast" @click="appStore.openSidebar()" />
-              <img :src="logoUrl" class="w-8/12 md:w-11/12 max-w-[380px] cursor-pointer" @click="router.push('/')" />
+              <img :src="projectDivision === 'The Outdoor Plus' ? logoUrl : logoUrlVidel"
+                class="w-8/12 md:w-11/12 max-w-[380px] cursor-pointer" @click="router.push('/')" />
             </div>
           </template>
           <template #end>

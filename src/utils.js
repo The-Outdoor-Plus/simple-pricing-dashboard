@@ -57,9 +57,26 @@ export const showRolePrice = (role) => {
 };
 
 export const calculatePercentage = (priceToGet, dealerPrice) => {
-  return `${addSign(Math.round(((priceToGet - dealerPrice) / dealerPrice) * 100))}%`;
+  const percentage = Math.round(((priceToGet - dealerPrice) / dealerPrice) * 100);
+  if (percentage === 0) return '';
+  return `${addSign(percentage)}%`;
 };
 
 export const addSign = (number) => {
   return number > 0 ? '+' + number : number < 0 ? '-' + Math.abs(number) : '0';
+};
+
+export const textToKey = (text) => {
+  return text.replace(/\s+/g, '_').toLowerCase();
+};
+
+export const extractImages = (imagesText) => {
+  let images = [];
+  if (imagesText) {
+    images = imagesText.split(',').map((image) => {
+      const [label, imgUrl] = image.split(/:\s+/); // Split on the first ": " with optional whitespace
+      return { label: label.trim(), imgUrl: imgUrl.trim() }; // Trim to clean up spaces
+    });
+  }
+  return images;
 };

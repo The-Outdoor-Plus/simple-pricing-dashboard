@@ -259,6 +259,39 @@ export default [
           ],
         },
       },
+      {
+        path: 'price-tiers',
+        name: 'Price Tiers',
+        component: () => import('@/views/PriceTiersView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
+          roles: ['ADMIN', 'MANAGER'],
+        },
+      },
+      {
+        path: 'price-tiers/create',
+        name: 'Create Price Tier',
+        component: () => import('@/views/PriceTierFormView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
+          roles: ['ADMIN', 'MANAGER'],
+        },
+      },
+      {
+        path: 'price-tiers/:id',
+        name: 'Edit Price Tier',
+        component: () => import('@/views/PriceTierFormView.vue'),
+        meta: {
+          requiresAuth: true,
+          onlyWhenLoggedOut: false,
+          requiresChangedPassword: true,
+          roles: ['ADMIN', 'MANAGER'],
+        },
+      },
     ],
   },
   {

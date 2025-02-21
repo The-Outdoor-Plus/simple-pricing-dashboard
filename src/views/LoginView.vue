@@ -1,6 +1,7 @@
 <template>
   <div class="card flex flex-col items-center justify-center w-12/12 lg:w-6/12 mx-auto mt-40">
-    <img :src="logoUrl" class="w-11/12 lg:w-10/12 mb-16">
+    <img v-if="projectDivision === 'The Outdoor Plus'" :src="logoUrl" class="w-11/12 lg:w-10/12 mb-16">
+    <img v-if="projectDivision === 'Videl USA'" :src="logoUrlVidel" class="w-11/12 lg:w-10/12 mb-16">
     <Form v-show="!isOtpSent || !areCredentialsValid" v-slot="$form" :resolver="resolver"
       :initial-values="initialValues" @submit="onFormSubmit" class="flex flex-col gap-4 w-full items-center">
       <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
@@ -42,17 +43,20 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, inject } from 'vue';
 import { supabase } from '@/supabase';
 import { useUserStore } from '@/store/user';
 import { useUser } from '@/composables/user';
 import { useAppStore } from '@/store/app';
 import { useRouter, useRoute } from 'vue-router';
 import logoUrl from '@/assets/top_logo.svg';
+import logoUrlVidel from '@/assets/videl_logo.png';
 
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { useToast } from 'primevue/usetoast';
 import { z } from 'zod';
+
+const projectDivision = inject('projectDivision');
 
 const toast = useToast();
 const initialValues = ref({
@@ -116,7 +120,8 @@ const onFormSubmit = async ({ valid, values }) => {
         success: credentialsValid,
         first_time,
         email_otp_active,
-      } = await verifyCredentials(form.email, form.password);
+        division_sent,
+      } = await verifyCredentials(form.email, form.password, projectDivision);
 
       if (credentialsValid) {
         const { data, error } = await supabase.auth.signInWithPassword(form);
@@ -142,11 +147,12 @@ const onFormSubmit = async ({ valid, values }) => {
           }
         }
       } else {
-        toast.add({ severity: 'error', summary: 'Error singing in', detail: 'Invalid credentials', life: 5000 });
+        toast.add({ severity: 'error', summary: 'Error singing in', detail: division_sent === false ? 'Error verifying division access.' : 'Invalid credentials', life: 5000 });
       }
     } catch (e) {
       await supabase.auth.signOut();
-      toast.add({ severity: 'error', summary: 'Error singing in', detail: e?.message || 'An error ocurred trying to sign in. Please contact TOP Support.', life: 5000 });
+      console.log(e);
+      toast.add({ severity: 'error', summary: e?.message || 'Error singing in', detail: e?.cause || 'An error ocurred trying to sign in. Please contact TOP Support.', life: 5000 });
       console.error(e);
     } finally {
       appStore.setLoading(false);

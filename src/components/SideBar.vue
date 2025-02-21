@@ -48,6 +48,18 @@
           </ul>
         </div>
         <div class="mt-auto">
+          <div class="flex items-center w-full mb-1 ml-1">
+            <Button
+              v-if="userStore.isUserAuthenticated && division === 'The Outdoor Plus' && userStore.hasAccessTo('Videl USA')"
+              type="button" label="Videl USA Portal" icon="pi pi-external-link" variant="text" severity="contrast"
+              @click="navigateTo('https://portal.videlusa.com', true)"></Button>
+          </div>
+          <div class="flex items-center w-full mb-1 ml-1">
+            <Button
+              v-if="userStore.isUserAuthenticated && division === 'Videl USA' && userStore.hasAccessTo('The Outdoor Plus')"
+              type="button" label="Videl USA Portal" icon="pi pi-external-link" variant="text" severity="contrast"
+              @click="navigateTo('https://portal.topfires.com', true)"></Button>
+          </div>
           <div class="flex items-center w-full mb-2 ml-1">
             <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
               variant="text" severity="contrast" @click="signOut()"></Button>
@@ -69,11 +81,12 @@
 import { useAppStore } from '@/store/app';
 import { useUserStore } from '@/store/user';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { ref, inject } from 'vue';
 
 const router = useRouter();
 const appStore = useAppStore();
 const userStore = useUserStore();
+const division = inject('projectDivision');
 
 const menuItems = ref([
   {
@@ -88,7 +101,8 @@ const menuItems = ref([
     icon: 'pi pi-file-pdf',
     path: '/rfqs',
     children: [],
-    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+    // roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+    roles: ['ADMIN'],
   },
   // {
   //   name: 'Orders',
@@ -125,7 +139,13 @@ const menuItems = ref([
         icon: 'pi pi-envelope',
         path: '/emails',
         roles: ['ADMIN', 'MANAGER'],
-      }
+      },
+      {
+        name: 'Price Tiers',
+        icon: 'pi pi-tag',
+        path: '/price-tiers',
+        roles: ['ADMIN', 'MANAGER'],
+      },
     ],
   },
 ]);
@@ -135,8 +155,12 @@ const close = (closeCallback) => {
   closeCallback();
 };
 
-const navigateTo = (path) => {
-  router.push(path);
+const navigateTo = (path, external = false) => {
+  if (external) {
+    window.open(path, '_blank', 'noopener,noreferrer');
+  } else {
+    router.push(path);
+  }
   appStore.closeSidebar();
 };
 
