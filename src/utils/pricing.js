@@ -1,10 +1,6 @@
 import { supabase } from '@/supabase';
 
-export const getPricesTiers = async (
-  division = 'The Outdoor Plus',
-  currentCompany,
-  currentRole,
-) => {
+export const getPricesTiers = async (division = null, currentCompany, currentRole) => {
   try {
     const { data, error } = await supabase
       .from('price_tiers')

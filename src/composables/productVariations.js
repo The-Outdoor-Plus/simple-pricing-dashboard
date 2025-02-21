@@ -18,9 +18,11 @@ export function useProductVariations() {
     const basePrice = product.base_price_dealer;
     const baseName = product.product;
     const formula = product.code_formula;
+    const division = product?.division;
 
-    let materialAttributes = await retrieveMaterialAttributes(product.product);
+    let materialAttributes = await retrieveMaterialAttributes(product.product, division);
     const attributes = await retrieveAttributes(
+      division,
       null,
       product.product ?? null,
       null,
@@ -165,10 +167,10 @@ export function useProductVariations() {
     return allCombinations;
   };
 
-  const loadProductVariations = async (product, company, role) => {
+  const loadProductVariations = async (product, company, role, division = null) => {
     try {
       isVariationTableLoading.value = true;
-      const { salesPrices, companyPrices } = await getPricesTiers(undefined, company, role);
+      const { salesPrices, companyPrices } = await getPricesTiers(division, company, role);
       productVariations.value = await generateProductVariations(
         product,
         null,

@@ -8,6 +8,14 @@ import { useUserStore } from '@/store/user';
 
 const rfqEmail = ref(null);
 
+/**
+ * ------------------------------------------------------------
+ * RFQ
+ * TODO: FIX RFQ WITH NEW PRICING FORMULAS, TPIN and DIVISION
+ *
+ * ------------------------------------------------------------
+ */
+
 export function useRfq() {
   const appStore = useAppStore();
   const router = useRouter();

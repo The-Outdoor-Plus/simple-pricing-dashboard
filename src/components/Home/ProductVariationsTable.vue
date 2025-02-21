@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, inject } from 'vue';
 import { useUserStore } from '@/store/user';
 import { useProduct } from '@/composables/product';
 import { useProductVariations } from '@/composables/productVariations';
@@ -85,6 +85,7 @@ const userStore = useUserStore();
 const { selectedProduct } = useProduct();
 const { productVariations, loadProductVariations } = useProductVariations();
 const isVariationTableLoading = ref(false);
+const division = inject('projectDivision');
 
 const showProductVariationsTable = computed(() => {
   return !!(selectedProduct.value && selectedProduct.value.product && productVariations.value && Object.keys(productVariations.value).length > 0);
@@ -143,7 +144,7 @@ const generateCSV = () => {
 
 onMounted(async () => {
   if (selectedProduct.value) {
-    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole);
+    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
   }
 });
 </script>

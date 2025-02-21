@@ -101,7 +101,7 @@
 </template>
 
 <script setup>
-import { ref, defineEmits, onMounted } from 'vue';
+import { ref, defineEmits, onMounted, inject } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/store/user';
 import { useProduct } from '@/composables/product';
@@ -110,6 +110,8 @@ import { formatPrice } from '@/utils/pricing';
 import { evaluateFormula } from '@/utils/formulaEvaluator';
 import { getSelectedAddonText, getSelectedAttributeText } from '@/utils/product';
 import { textToKey } from '@/utils';
+
+const division = inject('projectDivision');
 
 const userStore = useUserStore();
 const route = useRoute();
@@ -168,7 +170,7 @@ const highlightMatch = (text) => {
 
 const onSearchProductChange = async (event) => {
   if (event.value && event.value.length > 2) {
-    await loadProducts(event.value);
+    await loadProducts(event.value, division);
     productQuerySearch.value = event.value;
   }
 };

@@ -26,11 +26,22 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useProduct } from '@/composables/product';
 import { extractImages } from '@/utils';
 
 const { selectedProduct, selectedMaterial } = useProduct();
+
+const responsiveOptions = ref([
+  {
+    breakpoint: '1300px',
+    numVisible: 4,
+  },
+  {
+    breakpoint: '575px',
+    numVisible: 2,
+  },
+]);
 
 const currentImages = computed(() => {
   const productImages = extractImages(selectedProduct.value?.images);

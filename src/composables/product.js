@@ -44,7 +44,7 @@ export function useProduct() {
     });
   };
 
-  const loadProduct = async (productId) => {
+  const loadProduct = async (productId, division = null) => {
     try {
       const { data: product, error } = await supabase
         .from('BaseProducts')
@@ -61,10 +61,13 @@ export function useProduct() {
         feature_type,
         product_type,
         fire_feature_category,
-        color_tones
+        color_tones,
+        division,
+        base_tpin
       `,
         )
         .eq('id', productId)
+        .eq('division', division)
         .single();
       if (error) throw error;
       selectedProduct.value = product;
@@ -73,7 +76,7 @@ export function useProduct() {
     }
   };
 
-  const loadProducts = async (textSearch = null) => {
+  const loadProducts = async (textSearch = null, division = null) => {
     try {
       // appStore.setLoading(true);
       let query = supabase.from('BaseProducts').select(`
@@ -88,7 +91,9 @@ export function useProduct() {
         feature_type,
         product_type,
         fire_feature_category,
-        color_tones
+        color_tones,
+        division,
+        base_tpin
       `);
 
       if (textSearch) {
@@ -96,7 +101,12 @@ export function useProduct() {
           .replace(/ /g, '+')
           .toLowerCase()
           .replace(/([^\w\s+])/g, '\\$1');
-        query = supabase.rpc('search_product_by_name_sku', { term: searchTerms });
+        query = supabase.rpc('search_product_by_name_sku', {
+          term: searchTerms,
+          subdivision: division,
+        });
+      } else {
+        query = query.eq('division', division);
       }
 
       const { data, error } = await query;
@@ -123,10 +133,10 @@ export function useProduct() {
     }
   };
 
-  const loadMaterialAttributes = async (productName) => {
+  const loadMaterialAttributes = async (productName, division = null) => {
     try {
       appStore.setLoading(true);
-      materialAttributes.value = await retrieveMaterialAttributes(productName);
+      materialAttributes.value = await retrieveMaterialAttributes(productName, division);
     } catch (e) {
       toast.add({
         severity: 'error',
@@ -142,6 +152,7 @@ export function useProduct() {
   };
 
   const loadAttributes = async (
+    division = null,
     attributeType = null,
     productFilter = null,
     materialFilter = null,
@@ -154,6 +165,7 @@ export function useProduct() {
     try {
       appStore.setLoading(true);
       const attributesValues = await retrieveAttributes(
+        division,
         attributeType,
         productFilter,
         materialFilter,
@@ -189,6 +201,7 @@ export function useProduct() {
   };
 
   const retrieveAllAddons = async (
+    division = null,
     productFilter = null,
     productTypeFilter = null,
     materialFilter = null,
@@ -210,7 +223,9 @@ export function useProduct() {
         size_filter,
         feature_filter,
         feature_category_filter,
-        shape_filter`,
+        shape_filter,
+        division,
+        tpin`,
       );
       if (productFilter)
         query = query.or(
@@ -268,6 +283,7 @@ export function useProduct() {
             `shape_filter.ilike."%, ${shapeFilter.replace(/"/g, '\\"')},%",` +
             `shape_filter.is.null`,
         );
+      query = query.eq('division', division);
       const { data, error } = await query;
       if (error) throw error;
       return data;
@@ -277,6 +293,7 @@ export function useProduct() {
   };
 
   const loadAllAddons = async (
+    division = null,
     productFilter = null,
     productTypeFilter = null,
     materialFilter = null,
@@ -288,6 +305,7 @@ export function useProduct() {
     try {
       appStore.setLoading(true);
       const addOnsList = await retrieveAllAddons(
+        division,
         productFilter,
         productTypeFilter,
         materialFilter,
@@ -317,10 +335,10 @@ export function useProduct() {
     }
   };
 
-  const retrieveAnnouncementsLength = async () => {
+  const retrieveAnnouncementsLength = async (division = null) => {
     try {
       appStore.setLoading(true);
-      let query = supabase.from('Announcements').select('id');
+      let query = supabase.from('Announcements').select('id').eq('division', division);
       const { data, error } = await query;
       if (error) throw error;
       announcementsLength.value = data.length;
@@ -337,10 +355,10 @@ export function useProduct() {
     }
   };
 
-  const loadAnnouncements = async () => {
+  const loadAnnouncements = async (division = null) => {
     try {
       appStore.setLoading(true);
-      let query = supabase.from('Announcements').select('*');
+      let query = supabase.from('Announcements').select('*').eq('division', division);
       const { data, error } = await query;
       if (error) throw error;
       announcements.value = data;

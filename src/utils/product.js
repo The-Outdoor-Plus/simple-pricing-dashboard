@@ -2,7 +2,7 @@ import { supabase } from '@/supabase';
 import { formatPrice } from '@/utils/pricing';
 import { calculateRetailPrice } from '@/utils';
 
-export const retrieveMaterialAttributes = async (productName) => {
+export const retrieveMaterialAttributes = async (productName, division = null) => {
   try {
     let query = supabase.from('MaterialsAttributes').select(
       `
@@ -15,10 +15,13 @@ export const retrieveMaterialAttributes = async (productName) => {
         promo_code,
         discount,
         images,
-        promotion_details
+        promotion_details,
+        division,
+        attribute_tpin
       `,
     );
     if (productName) query = query.eq('product_filter', productName);
+    query = query.eq('division', division);
     const { data, error } = await query;
     if (error) throw error;
     return data;
@@ -28,6 +31,7 @@ export const retrieveMaterialAttributes = async (productName) => {
 };
 
 export const retrieveAttributes = async (
+  division = null,
   attributeType = null,
   productFilter = null,
   materialFilter = null,
@@ -37,11 +41,22 @@ export const retrieveAttributes = async (
   colorTonesFilter = null,
 ) => {
   try {
-    let query = supabase
-      .from('Attributes')
-      .select(
-        `id, attribute_type, attribute_option, add_on_price, attribute_code, code_identifier, product_filter, material_filter, size_filter, feature_filter, feature_category_filter, color_tones_filter`,
-      );
+    let query = supabase.from('Attributes').select(
+      `id,
+        attribute_type,
+        attribute_option,
+        add_on_price,
+        attribute_code,
+        code_identifier,
+        product_filter,
+        material_filter,
+        size_filter,
+        feature_filter,
+        feature_category_filter,
+        color_tones_filter,
+        division,
+        attribute_tpin`,
+    );
     if (attributeType) query = query.eq('attribute_type', attributeType);
     if (productFilter)
       query = query.or(
@@ -91,6 +106,7 @@ export const retrieveAttributes = async (
           `color_tones_filter.ilike."%, ${colorTonesFilter.replace(/"/g, '\\"')},%",` +
           `color_tones_filter.is.null`,
       );
+    query = query.eq('division', division);
     const { data, error } = await query;
     if (error) throw error;
     return data;

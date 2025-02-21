@@ -27,7 +27,7 @@
       </div>
     </div>
     <div class="w-full flex flex-col xl:grid xl:grid-cols-5 gap-8 mb-5">
-      <ProductConfigurator />
+      <ProductConfigurator @product-selected="loadProductInformation" />
       <!--
         ------------------------------------------------------------
         COMPANY ONLY VIEW
@@ -65,7 +65,7 @@ import SalesProductDetails from '@/components/Home/SalesProductDetails.vue';
 import CompanyProductBreakdown from '@/components/Home/CompanyProductBreakdown.vue';
 import ProductConfigurator from '@/components/Home/ProductConfigurator.vue';
 
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, inject } from 'vue';
 import { useProduct } from '@/composables/product';
 import { useUserStore } from '@/store/user';
 import { useCartStore } from '@/store/cart';
@@ -74,6 +74,7 @@ import { useProductVariations } from '@/composables/productVariations';
 import { usePricing } from '@/composables/pricing';
 import { textToKey } from '@/utils';
 
+const division = inject('projectDivision');
 
 const {
   materialAttributes,
@@ -118,12 +119,12 @@ const currentProduct = computed(() => {
 const loadProductInformation = async () => {
   try {
     setSelectedMaterial(null);
-    await loadMaterialAttributes(selectedProduct.value.product);
+    await loadMaterialAttributes(selectedProduct.value.product, division);
     materialAttributes.value.length > 0
       ? setSelectedMaterial(materialAttributes.value[0])
       : setSelectedMaterial(null);
     if (selectedMaterial.value && selectedMaterial.value.attribute_option) {
-      await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole);
+      await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
     }
   } catch (e) {
     console.error(e);
@@ -153,6 +154,7 @@ watch(selectedMaterial, async () => {
     });
     cleanSelectedAttributes();
     await loadAttributes(
+      division,
       null,
       selectedProduct.value?.product ?? null,
       selectedMaterial.value?.attribute_option ?? null,
@@ -176,6 +178,7 @@ watch(selectedMaterial, async () => {
       }
     });
     await loadAllAddons(
+      division,
       selectedProduct.value?.product ?? null,
       selectedProduct.value?.product_type ?? null,
       selectedMaterial.value?.attribute_option ?? null,
@@ -185,21 +188,21 @@ watch(selectedMaterial, async () => {
       selectedProduct.value?.shape ?? null,
     );
     calculateSelectedAddons();
-    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole);
+    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
   }
 });
 
 onMounted(async () => {
   if (route.query.product) {
     productQueryId.value = route.query.product;
-    await loadProduct(route.query.product);
+    await loadProduct(route.query.product, division);
     await loadProductInformation();
   }
   if (route.query.s) {
-    await loadProducts(route.query.s);
+    await loadProducts(route.query.s, division);
   }
-  await retrieveAnnouncementsLength();
-  const { salesPrices, companyPrices } = await getPricesTiers(undefined, userStore.currentCompany, userStore.currentRole);
+  await retrieveAnnouncementsLength(division);
+  const { salesPrices, companyPrices } = await getPricesTiers(division, userStore.currentCompany, userStore.currentRole);
   setSalesPriceTiers(salesPrices);
   setCompanyPriceTiers(companyPrices);
 });
