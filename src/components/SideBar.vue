@@ -52,13 +52,13 @@
             <Button
               v-if="userStore.isUserAuthenticated && division === 'The Outdoor Plus' && userStore.hasAccessTo('Videl USA')"
               type="button" label="Videl USA Portal" icon="pi pi-external-link" variant="text" severity="contrast"
-              @click="navigateTo('https://portal.videlusa.com', true)"></Button>
+              @click="navigateToPortal()"></Button>
           </div>
           <div class="flex items-center w-full mb-1 ml-1">
             <Button
               v-if="userStore.isUserAuthenticated && division === 'Videl USA' && userStore.hasAccessTo('The Outdoor Plus')"
               type="button" label="The Outdoor Plus Portal" icon="pi pi-external-link" variant="text"
-              severity="contrast" @click="navigateTo('https://portal.topfires.com', true)"></Button>
+              severity="contrast" @click="navigateToPortal()"></Button>
           </div>
           <div class="flex items-center w-full mb-2 ml-1">
             <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
