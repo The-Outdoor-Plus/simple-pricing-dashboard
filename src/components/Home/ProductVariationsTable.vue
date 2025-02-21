@@ -62,8 +62,9 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, inject } from 'vue';
+import { computed, ref, onMounted, inject, nextTick, watch } from 'vue';
 import { useUserStore } from '@/store/user';
+import { useAppStore } from '@/store/app';
 import { useProduct } from '@/composables/product';
 import { useProductVariations } from '@/composables/productVariations';
 import { formatPrice } from '@/utils/pricing';
@@ -75,6 +76,7 @@ import { textToKey } from '@/utils';
  * ------------------------------------------------------------
  */
 const userStore = useUserStore();
+const appStore = useAppStore();
 
 /**
  * ------------------------------------------------------------
@@ -96,7 +98,6 @@ const generateCSV = () => {
   const allRows = Object.values(productVariations.value).flat().flatMap((variation) => variation.combinations);
 
   const rows = allRows.map((row) => {
-    console.log(row);
     const newPrices = Object.keys(row.prices).reduce((acc, key) => {
       let newKey = '';
       if (key === 'companyCost') {
@@ -142,7 +143,14 @@ const generateCSV = () => {
  * ------------------------------------------------------------
  */
 
+watch(() => selectedProduct, async () => {
+  if (selectedProduct.value) {
+    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
+  }
+})
+
 onMounted(async () => {
+  await nextTick();
   if (selectedProduct.value) {
     await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
   }
