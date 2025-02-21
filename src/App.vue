@@ -40,8 +40,10 @@ onMounted(async () => {
               <!-- TODO: REMOVE ISAGENT -->
               <Button v-if="userStore.isUserAuthenticated && !userStore.isFirstTime" icon="pi pi-bars" variant="text"
                 severity="contrast" @click="appStore.openSidebar()" />
-              <img :src="projectDivision === 'The Outdoor Plus' ? logoUrl : logoUrlVidel"
+              <img v-if="projectDivision === 'The Outdoor Plus'" :src="logoUrl"
                 class="w-8/12 md:w-11/12 max-w-[380px] cursor-pointer" @click="router.push('/')" />
+              <img v-if="projectDivision === 'Videl USA'" :src="logoUrlVidel"
+                class="w-4/12 md:w-5/12 max-w-[380px] cursor-pointer" @click="router.push('/')" />
             </div>
           </template>
           <template #end>
