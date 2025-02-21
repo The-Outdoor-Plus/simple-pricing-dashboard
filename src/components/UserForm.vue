@@ -164,6 +164,7 @@ const form = ref({
   password: '',
   password_confirmation: '',
   confirm_email: false,
+  first_time: true,
   email_otp_active: true,
   access_to: ['The Outdoor Plus']
 });
@@ -222,6 +223,7 @@ watch(() => props.user, (newUser) => {
       company: null,
       role: '',
       avatar_url: '',
+      first_time: true,
       confirm_email: false,
       email_otp_active: true,
       access_to: ['The Outdoor Plus']
@@ -276,7 +278,7 @@ const handleSubmit = async ({ valid, values }) => {
           company: form.value?.company?.id || null,
           role: form.value.role,
           avatar_url: form.value.avatar_url,
-          first_time: !form.value.confirm_email,
+          first_time: form.value.first_time,
           email_otp_active: form.value.email_otp_active,
           access_to: form.value.access_to,
         }
