@@ -1,7 +1,7 @@
 <template>
   <div class="card flex flex-col items-center justify-center w-12/12 lg:w-6/12 mx-auto mt-40">
     <img v-if="projectDivision === 'The Outdoor Plus'" :src="logoUrl" class="w-11/12 lg:w-10/12 mb-16">
-    <img v-if="projectDivision === 'Videl USA'" :src="logoUrlVidel" class="w-11/12 lg:w-10/12 mb-16">
+    <img v-if="projectDivision === 'Videl USA'" :src="logoUrlVidel" class="w-4/12 lg:w-5/12 mb-16">
     <Form v-show="!isOtpSent || !areCredentialsValid" v-slot="$form" :resolver="resolver"
       :initial-values="initialValues" @submit="onFormSubmit" class="flex flex-col gap-4 w-full items-center">
       <div class="flex flex-col gap-1 w-11/12 lg:w-9/12">
