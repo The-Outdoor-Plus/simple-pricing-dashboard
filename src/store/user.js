@@ -66,6 +66,9 @@ export const useUserStore = defineStore('user', {
         this.setCompany(data[0]);
       }
     },
+    hasAccessTo(division) {
+      return this.user?.user_metadata?.access_to?.includes(division);
+    },
   },
   getters: {
     currentUser: (state) => {
