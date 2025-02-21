@@ -57,8 +57,8 @@
           <div class="flex items-center w-full mb-1 ml-1">
             <Button
               v-if="userStore.isUserAuthenticated && division === 'Videl USA' && userStore.hasAccessTo('The Outdoor Plus')"
-              type="button" label="Videl USA Portal" icon="pi pi-external-link" variant="text" severity="contrast"
-              @click="navigateTo('https://portal.topfires.com', true)"></Button>
+              type="button" label="The Outdoor Plus Portal" icon="pi pi-external-link" variant="text"
+              severity="contrast" @click="navigateTo('https://portal.topfires.com', true)"></Button>
           </div>
           <div class="flex items-center w-full mb-2 ml-1">
             <Button v-if="userStore.isUserAuthenticated" type="button" label="Sign Out" icon="pi pi-sign-out"
@@ -154,6 +154,23 @@ const close = (closeCallback) => {
   appStore.closeSidebar();
   closeCallback();
 };
+
+const navigateToPortal = () => {
+  const windowDomain = window.location.hostname;
+  if (division === 'The Outdoor Plus') {
+    if (windowDomain.includes('portal-topfires')) {
+      navigateTo('https://portal-videlusa.kodeloom.dev', true);
+    } else {
+      navigateTo('https://portal.videlusa.com', true);
+    }
+  } else {
+    if (windowDomain.includes('portal-videlusa')) {
+      navigateTo('https://portal-topfires.kodeloom.dev', true);
+    } else {
+      navigateTo('https://portal.topfires.com', true);
+    }
+  }
+}
 
 const navigateTo = (path, external = false) => {
   if (external) {
