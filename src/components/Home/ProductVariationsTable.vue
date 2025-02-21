@@ -147,12 +147,13 @@ watch(() => selectedProduct, async () => {
   if (selectedProduct.value) {
     await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
   }
-})
+}, { immediate: true, deep: true });
 
 onMounted(async () => {
-  await nextTick();
-  if (selectedProduct.value) {
-    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
-  }
+  await nextTick(async () => {
+    if (selectedProduct.value) {
+      await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
+    }
+  });
 });
 </script>
