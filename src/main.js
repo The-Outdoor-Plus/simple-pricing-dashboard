@@ -23,11 +23,12 @@ let division = '';
 if (customEnvironment === 'local') {
   if (localDivision) division = localDivision;
 } else {
-  if (windowDomain.includes('portal.videlusa.com')) {
+  if (windowDomain.includes('portal.videlusa.com') || windowDomain.includes('portal-videlusa')) {
     division = 'Videl USA';
   } else if (
     windowDomain.includes('portal.theoutdoorplus.com') ||
-    windowDomain.includes('portal.topfires.com')
+    windowDomain.includes('portal.topfires.com') ||
+    windowDomain.includes('portal-topfires')
   ) {
     division = 'The Outdoor Plus';
   }
