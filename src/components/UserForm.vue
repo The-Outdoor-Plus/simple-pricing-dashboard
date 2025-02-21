@@ -49,6 +49,15 @@
           $form.role.error?.message }}</Message>
       </div>
       <div class="mb-4">
+        <label for="access_to" class="block mb-1">Has Access To</label>
+        <p class="text-sm text-gray-500 italic">Select the divisions this user has access to.</p>
+        <MultiSelect id="access_to" v-model="form.access_to" :options="accessTo"
+          placeholder="Select the divisions this user has access to" fluid filter required display="chip">
+        </MultiSelect>
+        <Message v-if="$form.access_to?.invalid" severity="error" size="small" variant="simple">{{
+          $form.access_to.error?.message }}</Message>
+      </div>
+      <div class="mb-4">
         <label for="avatar" class="block mb-1">Profile Picture Url</label>
         <InputText id="avatar" v-model="form.avatar_url" fluid />
         <Message v-if="$form.avatar_url?.invalid" severity="error" size="small" variant="simple">{{
@@ -75,12 +84,20 @@
         </div>
       </div>
       <div v-if="!isEdit" class="flex items-center gap-2 mb-4">
-        <Checkbox v-model="form.confirm_email" inputId="confirm_email" binary></Checkbox>
+        <ToggleSwitch id="confirm_email" v-model="form.confirm_email" name="confirm_email">
+          <template #handle="{ checked }">
+            <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]"></i>
+          </template>
+        </ToggleSwitch>
         <label for="confirm_email" class="block">Confirm User Email (If Confirmed, User Will Not Receive Welcome
           Email)</label>
       </div>
       <div class="flex items-center gap-2 mb-4">
-        <Checkbox v-model="form.email_otp_active" inputId="email_otp_active" binary></Checkbox>
+        <ToggleSwitch id="email_otp_active" v-model="form.email_otp_active" name="email_otp_active">
+          <template #handle="{ checked }">
+            <i :class="['!text-xs pi', { 'pi-check': checked, 'pi-times': !checked }]"></i>
+          </template>
+        </ToggleSwitch>
         <label for="email_otp_active" class="block">Enable Email 2FA</label>
       </div>
       <Button type="submit" label="Save" icon="pi pi-check" class="mt-6" />
@@ -122,6 +139,7 @@ const eventQuery = ref('');
 const filteredCompanies = ref([]);
 const localCompaniesList = ref([]);
 const editUserPassword = ref(false);
+const accessTo = ref(['The Outdoor Plus', 'Videl USA']);
 const initialValues = ref({
   first_name: '',
   last_name: '',
@@ -160,6 +178,7 @@ const resolver = ref(zodResolver(
     avatar_url: z.string().optional(),
     confirm_email: z.boolean().optional(),
     email_otp_active: z.boolean().optional(),
+    access_to: z.array(z.string()).min(1, { message: 'Access to is required.' }),
     password: z.string().min(6, { message: 'Minimum 6 characters' })
       .refine((value) => /[a-z]/.test(value), {
         message: 'Must have a lowercase letter.'
