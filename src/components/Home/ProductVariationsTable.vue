@@ -125,7 +125,6 @@ const calculateItemSize = computed(() => {
   const combinationsLength = productVariations.value[selectedMaterialVariation.value]?.combinations.length;
   if (combinationsLength > 0) {
     const avgNameLength = productVariations.value[selectedMaterialVariation.value]?.combinations.reduce((sum, combination) => {
-      console.log(combination);
       return sum + (combination?.Name?.length || 0)
     }, 0) / combinationsLength;
     itemNumRows = Math.ceil(avgNameLength / 32);
