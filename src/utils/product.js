@@ -56,7 +56,8 @@ export const retrieveAttributes = async (
         feature_category_filter,
         color_tones_filter,
         division,
-        attribute_tpin`,
+        attribute_tpin,
+        product_type_filter`,
     );
     if (attributeType) query = query.eq('attribute_type', attributeType);
     if (productFilter)
