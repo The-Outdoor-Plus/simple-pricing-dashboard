@@ -17,6 +17,7 @@ const selectedAddons = ref({});
 const selectedMaterial = ref(null);
 const promotionApplied = ref(false);
 const selectedAttributes = ref({});
+const areAddonsMultiple = ref({});
 
 export function useProduct() {
   const appStore = useAppStore();
@@ -97,6 +98,13 @@ export function useProduct() {
       `);
 
       if (textSearch) {
+        // Using websearch_to_tsquery to search for the text in the database
+        // const searchTerms = textSearch.toLowerCase().trim();
+        // query = supabase.rpc('search_product_by_name_sku', {
+        //   term: searchTerms,
+        //   subdivision: division,
+        // });
+        // Using to_tsquery to search for the text in the database
         const searchTerms = textSearch
           .replace(/ /g, '+')
           .toLowerCase()
@@ -160,6 +168,7 @@ export function useProduct() {
     featureFilter = null,
     featureCategoryFilter = null,
     colorTonesFilter = null,
+    productTypeFilter = null,
   ) => {
     const attribute = attributeType?.toLowerCase()?.split(' ').join('_') || '';
     try {
@@ -173,6 +182,7 @@ export function useProduct() {
         featureFilter,
         featureCategoryFilter,
         colorTonesFilter,
+        productTypeFilter,
       );
       if (attribute) attributes.value[attribute] = attributesValues;
       if (!attributeType) {
@@ -225,7 +235,8 @@ export function useProduct() {
         feature_category_filter,
         shape_filter,
         division,
-        tpin`,
+        tpin,
+        multiple`,
       );
       if (productFilter)
         query = query.or(
@@ -320,6 +331,11 @@ export function useProduct() {
         acc[key].push(item);
         return acc;
       }, {});
+      Object.keys(groupedByAddOnType).forEach((addOnKey) => {
+        areAddonsMultiple.value[addOnKey] = groupedByAddOnType[addOnKey].every(
+          (addOn) => !!addOn.multiple,
+        );
+      });
       addOns.value = groupedByAddOnType;
     } catch (e) {
       console.error(e);
@@ -370,7 +386,7 @@ export function useProduct() {
         detail: e?.message || 'Something went wrong. Please contact TOP Support',
         life: 3000,
       });
-      addOns.value = {};
+      announcements.value = [];
     } finally {
       appStore.setLoading(false);
     }
@@ -379,9 +395,13 @@ export function useProduct() {
   const calculateSelectedAddons = () => {
     Object.keys(addOns.value).forEach((key) => {
       if (addOns.value[key].length > 0) {
-        selectedAddons.value[textToKey(key)] = addOns.value[key].find(
-          (addon) => addon?.attribute_option === 'None',
-        );
+        if (areAddonsMultiple.value[key]) {
+          selectedAddons.value[textToKey(key)] = [];
+        } else {
+          selectedAddons.value[textToKey(key)] = addOns.value[key].find(
+            (addon) => addon?.attribute_option === 'None',
+          );
+        }
       }
     });
   };
@@ -429,6 +449,7 @@ export function useProduct() {
     promotionApplied,
     selectedAttributes,
     currentConfigurationSKU,
+    areAddonsMultiple,
     loadProducts,
     loadProduct,
     loadMaterialAttributes,

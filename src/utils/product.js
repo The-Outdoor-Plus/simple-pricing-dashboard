@@ -39,6 +39,7 @@ export const retrieveAttributes = async (
   featureFilter = null,
   featureCategoryFilter = null,
   colorTonesFilter = null,
+  productTypeFilter = null,
 ) => {
   try {
     let query = supabase.from('Attributes').select(
@@ -105,6 +106,14 @@ export const retrieveAttributes = async (
           `color_tones_filter.ilike."%, ${colorTonesFilter.replace(/"/g, '\\"')}%",` +
           `color_tones_filter.ilike."%, ${colorTonesFilter.replace(/"/g, '\\"')},%",` +
           `color_tones_filter.is.null`,
+      );
+    if (productTypeFilter)
+      query = query.or(
+        `product_type_filter.ilike."${productTypeFilter.replace(/"/g, '\\"')}",` +
+          `product_type_filter.ilike."%${productTypeFilter.replace(/"/g, '\\"')},%",` +
+          `product_type_filter.ilike."%, ${productTypeFilter.replace(/"/g, '\\"')}%",` +
+          `product_type_filter.ilike."%, ${productTypeFilter.replace(/"/g, '\\"')},%",` +
+          `product_type_filter.is.null`,
       );
     query = query.eq('division', division);
     const { data, error } = await query;
