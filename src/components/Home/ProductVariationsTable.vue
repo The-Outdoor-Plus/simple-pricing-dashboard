@@ -45,10 +45,31 @@
       <Column field="Name" header="Variation Name" style="min-width: 15rem"></Column>
       <Column field="SKU" header="SKU" style="min-width: 15rem"></Column>
       <Column v-for="(column_name) in productVariations[selectedMaterialVariation].price_columns"
-        :key="`${column_name}-col`" field="prices"
-        :header="column_name === 'companyCost' ? `${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost` : column_name">
+        :key="`${column_name}-col`" field="prices">
+        <template #header="slotProps">
+          <div class="flex items-center justify-center font-semibold transition-all duration-300"
+            :class="{ 'blur-sm select-none': !flippedCards.includes(`flip-card-${column_name}`) && column_name !== 'MAP' && column_name !== 'MSRP' }">
+            <template
+              v-if="!flippedCards.includes(`flip-card-${column_name}`) && column_name !== 'MAP' && column_name !== 'MSRP'">
+              Accounts Cost
+            </template>
+            <template v-else>
+              {{ column_name === 'companyCost' ? `${userStore?.company?.name ?? userStore.currentRole ??
+                userStore.currentCompanyRole ?? 'Your Company'} Cost` : column_name }}
+            </template>
+          </div>
+        </template>
         <template #body="slotProps">
-          {{ formatPrice(slotProps.data.prices[column_name]) }}
+          <div class="transition-all duration-300"
+            :class="{ 'blur-sm select-none': !flippedCards.includes(`flip-card-${column_name}`) && column_name !== 'MAP' && column_name !== 'MSRP' }">
+            <template
+              v-if="!flippedCards.includes(`flip-card-${column_name}`) && column_name !== 'MAP' && column_name !== 'MSRP'">
+              $0.00
+            </template>
+            <template v-else>
+              {{ formatPrice(slotProps.data.prices[column_name]) }}
+            </template>
+          </div>
         </template>
       </Column>
     </DataTable>
