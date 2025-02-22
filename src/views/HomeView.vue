@@ -189,7 +189,7 @@ watch(selectedMaterial, async () => {
       selectedProduct.value?.shape ?? null,
     );
     calculateSelectedAddons();
-    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
+    // await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
   }
 });
 
