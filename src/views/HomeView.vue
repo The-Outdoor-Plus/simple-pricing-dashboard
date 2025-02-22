@@ -94,6 +94,7 @@ const {
   setSelectedAttributes,
   cleanSelectedAttributes,
   selectedAttributes,
+  cleanAllAttributes,
 } = useProduct();
 
 const { loadProductVariations } = useProductVariations();
@@ -119,6 +120,7 @@ const currentProduct = computed(() => {
 const loadProductInformation = async () => {
   try {
     setSelectedMaterial(null);
+    cleanAllAttributes();
     await loadMaterialAttributes(selectedProduct.value.product, division);
     materialAttributes.value.length > 0
       ? setSelectedMaterial(materialAttributes.value[0])

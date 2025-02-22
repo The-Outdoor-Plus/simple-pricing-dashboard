@@ -45,6 +45,10 @@ export function useProduct() {
     });
   };
 
+  const cleanAllAttributes = () => {
+    allAttributes.value = {};
+  };
+
   const loadProduct = async (productId, division = null) => {
     try {
       const { data: product, error } = await supabase
@@ -450,6 +454,7 @@ export function useProduct() {
     selectedAttributes,
     currentConfigurationSKU,
     areAddonsMultiple,
+    cleanAllAttributes,
     loadProducts,
     loadProduct,
     loadMaterialAttributes,
