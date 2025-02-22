@@ -49,7 +49,10 @@ export function usePricing() {
   };
 
   const getAddons = computed(() => {
-    return Object.values(selectedAddons.value)
+    let flatAddons = Object.values(selectedAddons.value).flatMap((addon) =>
+      Array.isArray(addon) ? addon : [addon],
+    );
+    return flatAddons
       .filter((addon) => addon.attribute_option !== 'None')
       .map((addon) => ({
         ...addon,

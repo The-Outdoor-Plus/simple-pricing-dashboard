@@ -64,7 +64,7 @@
       </div>
       <template v-for="(addOnType, key) in addOns" :key="key">
         <div v-if="addOnType && addOnType.length" class="w-full flex flex-col">
-          <span class="text-black font-medium mb-2">
+          <span v-if="!areAddonsMultiple[key]" class="text-black font-medium mb-2">
             {{
               selectedAddons?.[textToKey(key)]?.attribute_option &&
                 selectedAddons?.[textToKey(key)]?.attribute_option !== 'None'
@@ -77,8 +77,11 @@
                 : `Select ${key}`
             }}
           </span>
-          <Select v-model="selectedAddons[textToKey(key)]" :name="textToKey(key)" :options="addOnType"
-            option-label="attribute_option" :placeholder="`Select ${key}`" fluid class="w-full">
+          <span v-else class="text-black font-medium mb-2">
+            Select {{ key }}
+          </span>
+          <Select v-if="!areAddonsMultiple[key]" v-model="selectedAddons[textToKey(key)]" :name="textToKey(key)"
+            :options="addOnType" option-label="attribute_option" :placeholder="`Select ${key}`" fluid class="w-full">
             <template #option="slotProps">
               {{ slotProps.option.attribute_option }}
               {{
@@ -94,6 +97,24 @@
               }}
             </template>
           </Select>
+          <MultiSelect v-else v-model="selectedAddons[textToKey(key)]" :name="textToKey(key)"
+            :options="addOnType.filter((addOn) => addOn.attribute_option !== 'None')" option-label="attribute_option"
+            :placeholder="`Select ${key}`" filter display="chip" class="w-full">
+            <template #option="slotProps">
+              {{ slotProps.option.attribute_option }}
+              {{
+                slotProps?.option?.add_on_price
+                  ? `(+${formatPrice(evaluateFormula(
+                    salesPriceTiers['MAP']?.[0]?.formula ??
+                    companyPriceTiers['MAP']?.[0]?.formula,
+                    {
+                      basePrice: slotProps?.option?.add_on_price
+                    }
+                  ))})`
+                  : ''
+              }}
+            </template>
+          </MultiSelect>
         </div>
       </template>
     </div>
@@ -126,6 +147,7 @@ const {
   selectedAddons,
   allAttributes,
   materialAttributes,
+  areAddonsMultiple,
   updateSelectedProduct,
 } = useProduct();
 const { salesPriceTiers, companyPriceTiers } = usePricing();
