@@ -30,6 +30,7 @@ export function useProductVariations() {
       product.feature_type ?? null,
       product.fire_feature_category ?? null,
       product.color_tones ?? null,
+      product.product_type ?? null,
     );
 
     const placeholders = formula.match(/{(.*?)}/g)?.map((p) => p.replace(/[{}]/g, '')) || [];
