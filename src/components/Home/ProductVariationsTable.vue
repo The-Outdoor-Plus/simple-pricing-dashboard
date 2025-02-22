@@ -27,7 +27,32 @@
         </template>
       </Column>
     </DataTable>
-    <Tabs v-if="showProductVariationsTable" :value="0" scrollable class="w-full">
+    <div v-if="showProductVariationsTable" class="flex flex-col gap-2">
+      <label class="text-sm font-semibold italic">Select Material</label>
+      <Select v-model="selectedMaterialVariation" :options="variationsMaterialOptions" optionLabel="label"
+        optionValue="value" class="w-1/3 mb-4" />
+    </div>
+    <DataTable
+      v-if="showProductVariationsTable && productVariations[selectedMaterialVariation]?.combinations.length > 0 && calculateItemSize"
+      :value="productVariations[selectedMaterialVariation].combinations" table-style="min-width: 100%;" striped-rows
+      :virtualScrollerOptions="{ itemSize: calculateItemSize }" scrollable scroll-height="500px"
+      :key="`${selectedMaterialVariation}-data-table-${calculateItemSize}`">
+      <Column header="Product Name" style="min-width: 12rem">
+        <template #body="slotProps">
+          {{ selectedProduct.product }}
+        </template>
+      </Column>
+      <Column field="Name" header="Variation Name" style="min-width: 15rem"></Column>
+      <Column field="SKU" header="SKU" style="min-width: 15rem"></Column>
+      <Column v-for="(column_name) in productVariations[selectedMaterialVariation].price_columns"
+        :key="`${column_name}-col`" field="prices"
+        :header="column_name === 'companyCost' ? `${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost` : column_name">
+        <template #body="slotProps">
+          {{ formatPrice(slotProps.data.prices[column_name]) }}
+        </template>
+      </Column>
+    </DataTable>
+    <!-- <Tabs v-if="showProductVariationsTable" :value="0" scrollable class="w-full">
       <TabList>
         <Tab v-for="(values, key, index) in productVariations" :key="key" :value="index">
           {{ key }}
@@ -35,26 +60,9 @@
       </TabList>
       <TabPanels>
         <TabPanel v-for="(values, key, index) in productVariations" :key="`${key}-table`" :value="index">
-          <!-- {{ values }} -->
-          <DataTable :value="values.combinations" table-style="min-width: 100%;" striped-rows
-            :virtualScrollerOptions="{ itemSize: 75 }" scrollable scroll-height="500px" :key="`${key}-data-table`">
-            <Column header="Product Name" style="min-width: 12rem">
-              <template #body="slotProps">
-                {{ selectedProduct.product }}
-              </template>
-            </Column>
-            <Column field="Name" header="Variation Name" style="min-width: 15rem"></Column>
-            <Column field="SKU" header="SKU" style="min-width: 15rem"></Column>
-            <Column v-for="(column_name) in values.price_columns" :key="`${column_name}-col`" field="prices"
-              :header="column_name === 'companyCost' ? `${userStore?.company?.name ?? userStore.currentRole ?? userStore.currentCompanyRole ?? 'Your Company'} Cost` : column_name">
-              <template #body="slotProps">
-                {{ formatPrice(slotProps.data.prices[column_name]) }}
-              </template>
-            </Column>
-          </DataTable>
         </TabPanel>
       </TabPanels>
-    </Tabs>
+    </Tabs> -->
     <div v-if="showProductVariationsTable" class="w-full flex justify-end mr-2 mt-6">
       <Button label="Download CSV" icon="pi pi-download" severity="info" @click="generateCSV" />
     </div>
@@ -67,8 +75,13 @@ import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
 import { useProduct } from '@/composables/product';
 import { useProductVariations } from '@/composables/productVariations';
+import { usePricing } from '@/composables/pricing';
 import { formatPrice } from '@/utils/pricing';
 import { textToKey } from '@/utils';
+
+const { selectedProduct } = useProduct();
+const { productVariations, loadProductVariations } = useProductVariations();
+const { flippedCards } = usePricing();
 
 /**
  * ------------------------------------------------------------
@@ -77,20 +90,47 @@ import { textToKey } from '@/utils';
  */
 const userStore = useUserStore();
 const appStore = useAppStore();
+const selectedMaterialVariation = ref(null);
+
+const variationsMaterialOptions = computed(() => {
+  return Object.keys(productVariations.value).map((key) => {
+    return {
+      label: key,
+      value: key,
+    }
+  });
+});
+
+watch(variationsMaterialOptions, () => {
+  if (variationsMaterialOptions.value.length > 0 && !selectedMaterialVariation.value) {
+    selectedMaterialVariation.value = variationsMaterialOptions.value[0]?.value;
+  }
+}, { deep: true });
 
 /**
  * ------------------------------------------------------------
  * Product Variations
  * ------------------------------------------------------------
  */
-
-const { selectedProduct } = useProduct();
-const { productVariations, loadProductVariations } = useProductVariations();
 const isVariationTableLoading = ref(false);
 const division = inject('projectDivision');
 
 const showProductVariationsTable = computed(() => {
   return !!(selectedProduct.value && selectedProduct.value.product && productVariations.value && Object.keys(productVariations.value).length > 0);
+});
+
+const calculateItemSize = computed(() => {
+  const itemSize = 35;
+  let itemNumRows = 0;
+  const combinationsLength = productVariations.value[selectedMaterialVariation.value]?.combinations.length;
+  if (combinationsLength > 0) {
+    const avgNameLength = productVariations.value[selectedMaterialVariation.value]?.combinations.reduce((sum, combination) => {
+      console.log(combination);
+      return sum + (combination?.Name?.length || 0)
+    }, 0) / combinationsLength;
+    itemNumRows = Math.ceil(avgNameLength / 32);
+  }
+  return itemSize * itemNumRows;
 });
 
 const generateCSV = () => {
@@ -143,11 +183,11 @@ const generateCSV = () => {
  * ------------------------------------------------------------
  */
 
-watch(() => selectedProduct, async () => {
-  if (selectedProduct.value) {
-    await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
-  }
-}, { immediate: true, deep: true });
+// watch(() => selectedProduct, async () => {
+//   if (selectedProduct.value) {
+//     await loadProductVariations(selectedProduct.value, userStore.currentCompany, userStore.currentRole, division);
+//   }
+// }, { immediate: true, deep: true });
 
 onMounted(async () => {
   await nextTick(async () => {
