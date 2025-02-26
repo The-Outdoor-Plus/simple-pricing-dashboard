@@ -11,15 +11,20 @@
         <ProgressSpinner style="width: 100px; height: 100px;" stroke-width="6" aria-label="loading"></ProgressSpinner>
       </div>
     </div>
+    <AtlassianWidget :key="route.fullPath" />
   </main>
 
 </template>
 
 <script setup>
 import { useAppStore } from '@/store/app';
+import { useRoute } from 'vue-router';
 import { onMounted } from 'vue';
 import SideBar from '@/components/SideBar.vue';
+import AtlassianWidget from '@/components/AtlassianWidget.vue';
+
 const appStore = useAppStore();
+const route = useRoute();
 
 onMounted(async () => {
   await appStore.loadEnums();

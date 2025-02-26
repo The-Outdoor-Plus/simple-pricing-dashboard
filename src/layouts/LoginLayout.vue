@@ -13,6 +13,21 @@
 
 <script setup>
 import { useAppStore } from '@/store/app';
+import { onMounted } from 'vue';
 
 const appStore = useAppStore();
+
+const cleanUpWidget = () => {
+  const existingIframe = document.querySelector('iframe[id^="jsd-widget"]');
+  if (existingIframe) {
+    existingIframe.style.pointerEvents = 'none';
+    existingIframe.style.display = 'none';
+    existingIframe.style.height = '0px';
+    existingIframe.style.width = '0px';
+  };
+}
+
+onMounted(async () => {
+  cleanUpWidget();
+});
 </script>

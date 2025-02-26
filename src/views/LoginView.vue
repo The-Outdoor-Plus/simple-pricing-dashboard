@@ -142,8 +142,8 @@ const onFormSubmit = async ({ valid, values }) => {
           } else {
             await userStore.loadUserCompany();
             toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
-            if (route?.query?.redirect) router.push(`${route.query.redirect}`);
-            else router.push('/');
+            if (route?.query?.redirect) router.replace(`${route.query.redirect}`);
+            else router.replace('/');
           }
         }
       } else {
@@ -172,8 +172,8 @@ const onOtpSubmit = async ({ valid, values }) => {
         await userStore.sucessfullLogin(otpValid.user, otpValid.session);
         await userStore.loadUserCompany();
         toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
-        if (route?.query?.redirect) router.push(`${route.query.redirect}`);
-        else router.push('/');
+        if (route?.query?.redirect) router.replace(`${route.query.redirect}`);
+        else router.replace('/');
       } else {
         toast.add({ severity: 'error', summary: 'Error singing in', detail: 'Invalid OTP', life: 5000 });
       }
