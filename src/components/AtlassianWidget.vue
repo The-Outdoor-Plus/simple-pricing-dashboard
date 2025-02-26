@@ -84,7 +84,6 @@ const observeIframe = (iframe) => {
 
     const observerCallback = (mutationsList) => {
       for (const mutation of mutationsList) {
-        console.log('Mutation:', mutation);
         if (mutation.type === 'childList') {
           const form = iframeDoc.querySelector('.help-form');
           if (!form) return;

@@ -30,7 +30,6 @@ export function useFile() {
   };
 
   const deleteFileFromS3WithCloudFrontUrl = async (cloudFrontUrl) => {
-    console.log('cloudFrontUrl', cloudFrontUrl);
     try {
       const response = await fetch(`${import.meta.env.VITE_AWSMIDDLEWARE_URL}/delete-from-s3`, {
         method: 'PUT',

@@ -151,7 +151,6 @@ const onFormSubmit = async ({ valid, values }) => {
       }
     } catch (e) {
       await supabase.auth.signOut();
-      console.log(e);
       toast.add({ severity: 'error', summary: e?.message || 'Error singing in', detail: e?.cause || 'An error ocurred trying to sign in. Please contact TOP Support.', life: 5000 });
       console.error(e);
     } finally {

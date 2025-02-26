@@ -22,8 +22,6 @@ router.beforeEach((to, from, next) => {
   if (reauthenticationTime && loggedIn) {
     const elapsedTimeInSeconds = Math.floor((Date.now() - reauthenticationTime) / 1000);
 
-    console.log('elapsedTimeInSeconds', elapsedTimeInSeconds);
-
     if (elapsedTimeInSeconds > 600) {
       localStorage.removeItem('reauthentication');
       userStore.logout();

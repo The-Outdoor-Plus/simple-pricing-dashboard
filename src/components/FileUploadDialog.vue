@@ -35,7 +35,7 @@
               <div v-for="(file, index) of files" :key="file.name + file.type + file.size"
                 class="py-8 rounded-border flex flex-col border border-surface items-center gap-4 w-60">
                 <span class="font-semibold text-ellipsis max-w-96 whitespace-nowrap overflow-hidden">{{ file.name
-                  }}</span>
+                }}</span>
                 <div>{{ formatSize(file.size) }}</div>
                 <Badge value="Pending" severity="warn" />
                 <Button icon="pi pi-times" @click="removeFileCallback(file, removeFileCallback, index)" outlined rounded
@@ -50,7 +50,7 @@
               <div v-for="(file, index) of uploadedFiles" :key="file.name + file.type + file.size"
                 class="p-8 rounded-border flex flex-col border border-surface items-center gap-4">
                 <span class="font-semibold text-ellipsis max-w-60 whitespace-nowrap overflow-hidden">{{ file.name
-                  }}</span>
+                }}</span>
                 <div>{{ formatSize(file.size) }}</div>
                 <Badge value="Completed" class="mt-4" severity="success" />
                 <Button icon="pi pi-times" @click="removeUploadedFileCallback(index)" outlined rounded
@@ -148,7 +148,6 @@ const onUpload = async (event) => {
 const onSelect = (event) => {
   if (event.files.length > 1) {
     const testFiles = event.files.at(-1);
-    console.log(testFiles);
     fileupload.value.files = [testFiles];
   }
 };

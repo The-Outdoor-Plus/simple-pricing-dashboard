@@ -47,7 +47,6 @@ export function useRfq() {
         .order('created_at', { ascending: false })
         .limit(1);
       if (error) throw error;
-      console.log(data);
       let num = 2011;
       if (data.length) {
         const lastRfqNumber = data[0]?.rfq_number || '';
