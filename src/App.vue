@@ -8,6 +8,7 @@ import { useAppStore } from './store/app';
 import logoUrlVidel from '@/assets/videl_logo.png';
 
 const userStore = useUserStore();
+const appStore = useAppStore();
 const router = useRouter();
 const route = useRoute();
 const cartStore = useCartStore();
