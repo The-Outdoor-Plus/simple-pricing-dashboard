@@ -7,7 +7,7 @@ import { useCartStore } from './store/cart';
 import { useAppStore } from './store/app';
 import logoUrlVidel from '@/assets/videl_logo.png';
 
-const userStore = useUserSto./ components / AtlassianWidget.vuere();
+const userStore = useUserStore();
 const router = useRouter();
 const route = useRoute();
 const cartStore = useCartStore();
