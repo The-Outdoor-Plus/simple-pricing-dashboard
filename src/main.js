@@ -9,7 +9,7 @@ import pinia from './store';
 import PrimeVue from 'primevue/config';
 import Aura from '@primevue/themes/aura';
 import VueKonva from 'vue-konva';
-
+import * as Sentry from '@sentry/vue';
 import ConfirmationService from 'primevue/confirmationservice';
 import DialogService from 'primevue/dialogservice';
 import ToastService from 'primevue/toastservice';
@@ -59,3 +59,20 @@ app.use(ToastService);
 app.use(DialogService);
 
 app.mount('#app');
+
+Sentry.init({
+  app,
+  dsn: import.meta.env.VITE_SENTRY_DSN,
+  environment: import.meta.env.VITE_COOLIFY_ENV,
+  integrations: [Sentry.browserTracingIntegration({ router }), Sentry.replayIntegration()],
+  // Performance Monitoring
+  tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production
+  // Set 'tracePropagationTargets' to control for which URLs distributed tracing will be enabled
+  tracePropagationTargets: [
+    /^https:\/\/portal\.videlusa\.com/,
+    /^https:\/\/portal\.theoutdoorplus\.com/,
+    /^https:\/\/portal\.topfires\.com/,
+  ],
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+});
