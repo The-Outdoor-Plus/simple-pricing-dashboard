@@ -11,13 +11,13 @@
     <Dialog v-model:visible="showUserForm" class="w-[92vw] md:w-[75vw] lg:w-[60vw] xl:w-[45vw] 2xl:w-[750px]"
       :header="selectedUser ? 'Edit User' : 'New User'" :modal="true">
       <UserForm :user="selectedUser" :companies="companies" :isEdit="isEdit" @saved="userSaved"
-        @cancel="showUserForm = false" :welcomeEmail="welcomeEmail" />
+        @cancel="showUserForm = false" />
     </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject } from 'vue';
 import { useRouter } from 'vue-router';
 import UsersTable from '@/components/UsersTable.vue';
 import UserForm from '@/components/UserForm.vue';
@@ -37,8 +37,6 @@ const filters = ref({
   'company.name': { value: null, matchMode: FilterMatchMode.EQUALS },
   'first_name': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
-
-const { loadWelcomeEmail, welcomeEmail } = useUser();
 
 // Fetch users with filters and pagination
 const fetchUsers = async (page = 0, rowsPerPage = 10) => {
@@ -132,7 +130,6 @@ const userSaved = () => {
 onMounted(async () => {
   await fetchUsers(); // Initial fetch
   await fetchCompanies();
-  await loadWelcomeEmail();
 });
 </script>
 
