@@ -112,6 +112,7 @@ import { useToast } from 'primevue/usetoast';
 import { supabase } from '@/supabase';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
+import { useUser } from '@/composables/user';
 
 const props = defineProps({
   user: {
@@ -125,10 +126,6 @@ const props = defineProps({
   isEdit: {
     type: Boolean,
     default: false,
-  },
-  welcomeEmail: {
-    type: Object,
-    default: () => ({}),
   },
 });
 
@@ -168,6 +165,8 @@ const form = ref({
   email_otp_active: true,
   access_to: ['The Outdoor Plus']
 });
+
+const { loadWelcomeEmail, welcomeEmail } = useUser();
 
 const resolver = ref(zodResolver(
   z.object({
@@ -322,15 +321,27 @@ const handleSubmit = async ({ valid, values }) => {
         if (error) throw error;
 
         if (!form.value.confirm_email) {
-          const emailHtml = props.welcomeEmail.html
+          let welcomeEmailDivision = form.value.access_to.includes('The Outdoor Plus') ? 'The Outdoor Plus' : 'Videl USA';
+          await loadWelcomeEmail(welcomeEmailDivision);
+          let emailHtml = welcomeEmail.value.html
             .replace('{{ first_name }}', form.value.first_name)
             .replace('{{ email_address }}', form.value.email)
             .replace('{{ password }}', form.value.password);
-          await supabase.functions.invoke('resend-email', {
+
+          const subjectText = form.value.access_to.includes('The Outdoor Plus') ? '🔥 Welcome to the TOP Portal' : '🔥 Welcome to the Videl USA Portal';
+          const fromAddress = form.value.access_to.includes('The Outdoor Plus') ? {
+            name: 'TOP Portal',
+            email: 'portal@mail.theoutdoorplus.com',
+          } : {
+            name: 'Videl USA Portal',
+            email: 'portal@mail.theoutdoorplus.com',
+          };
+
+          await supabase.functions.invoke('send-email', {
             body: {
               toAddress: form.value.email,
-              fromAddress: 'TOP Portal <noreply@updates.topfires.com>',
-              subject: '🔥 Welcome to the TOP Portal',
+              fromAddress: fromAddress,
+              subject: subjectText,
               html: emailHtml,
             }
           });
