@@ -14,6 +14,7 @@ Deno.serve(async (req) => {
 
   if (req.method === "POST") {
     let sesClient = null;
+    let transporter = null;
     if (Deno.env.get("ENVIRONMENT") === "local") {
       sesClient = new SESClient({
         region: "us-east-2",
@@ -23,8 +24,20 @@ Deno.serve(async (req) => {
           secretAccessKey: "test",
         },
       });
+      transporter = nodemailer.createTransport({
+        host: "host.docker.internal",
+        port: 54325,
+        secure: false,
+        auth: {
+          user: "admin@inbucket.local",
+          pass: "password",
+        },
+      });
     } else {
       sesClient = new SESClient({});
+      transporter = nodemailer.createTransport({
+        SES: { ses: sesClient, aws },
+      });
     }
 
     try {
@@ -58,28 +71,28 @@ Deno.serve(async (req) => {
         contentType: string;
       }[] = [];
 
-      files.forEach(
-        (file: { filename: string; content: string; contentType: string }) => {
-          const base64Content = file.content.split(",")[1];
+      if (files !== null && files !== undefined && files.length > 0) {
+        files.forEach(
+          (
+            file: { filename: string; content: string; contentType: string },
+          ) => {
+            const base64Content = file.content.split(",")[1];
 
-          const binaryContent = atob(base64Content);
-          const arrayBuffer = new ArrayBuffer(binaryContent.length);
-          const uint8Array = new Uint8Array(arrayBuffer);
-          for (let i = 0; i < binaryContent.length; i++) {
-            uint8Array[i] = binaryContent.charCodeAt(i);
-          }
+            const binaryContent = atob(base64Content);
+            const arrayBuffer = new ArrayBuffer(binaryContent.length);
+            const uint8Array = new Uint8Array(arrayBuffer);
+            for (let i = 0; i < binaryContent.length; i++) {
+              uint8Array[i] = binaryContent.charCodeAt(i);
+            }
 
-          attachments.push({
-            filename: file.filename,
-            content: uint8Array,
-            contentType: file.contentType,
-          });
-        },
-      );
-
-      const transporter = nodemailer.createTransport({
-        SES: { ses: sesClient, aws },
-      });
+            attachments.push({
+              filename: file.filename,
+              content: uint8Array,
+              contentType: file.contentType,
+            });
+          },
+        );
+      }
 
       const result = await transporter.sendMail({
         from: `${fromAddress.name} <${fromAddress.email}>`,
