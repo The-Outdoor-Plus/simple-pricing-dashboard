@@ -109,3 +109,57 @@ BEGIN
   
   RETURN NEW;
 END $$;
+
+
+SELECT base_product_name, json_agg(records) AS records
+FROM "public"."BaseProducts" AS records
+GROUP BY base_product_name;
+
+SELECT COALESCE(base_product_name, product) AS base_product, json_agg(json_build_object(
+  'id', id,
+  'base_product_name', base_product_name,
+  'product', product
+)) AS RECORDS
+FROM public."BaseProducts"
+GROUP BY COALESCE(base_product_name, product);
+
+SELECT base_product_name, json_agg(json_build_object(
+  'base_product_name', base_product_name,
+  'product', product
+)) AS RECORDS
+FROM public."BaseProducts"
+GROUP BY base_product_name;
+
+
+CREATE OR REPLACE FUNCTION get_grouped_products_with_materials()
+RETURNS TABLE (
+  base_product TEXT,
+  records JSON
+) AS $$
+BEGIN
+ RETURN QUERY
+ SELECT COALESCE(bp.base_product_name, bp.product) AS base_product, json_agg(json_build_object(
+  'base_product_name', bp.base_product_name,
+  'product', bp.product,
+  'materials', (
+    SELECT json_agg(ma.attribute_option)
+    FROM "MaterialsAttributes" ma
+    WHERE ma.product_filter = bp.product
+  )
+)) AS records
+FROM public."BaseProducts" bp
+GROUP BY COALESCE(bp.base_product_name, bp.product);
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+SELECT COALESCE(bp.base_product_name, bp.product) AS base_product, json_agg(json_build_object(
+  'base_product_name', bp.base_product_name,
+  'product', bp.product,
+  'materials', (
+    SELECT json_agg(ma.attribute_option)
+    FROM "MaterialsAttributes" ma
+    WHERE ma.product_filter = bp.product
+  )
+)) AS records
+FROM public."BaseProducts" bp
+GROUP BY COALESCE(bp.base_product_name, bp.product);
