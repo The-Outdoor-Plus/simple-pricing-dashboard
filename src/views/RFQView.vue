@@ -281,20 +281,20 @@ const submitRFQ = async () => {
 
       const files = [pdfFile];
 
-      const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          // TODO: Get the email address from the user
-          toAddress: 'rodrigo@theoutdoorplus.com',
-          fromAddress: {
-            email: 'media@theoutdoorplus.com',
-            name: 'The Outdoor Plus Dealer Portal'
-          },
-          text: 'New Request for Quote from ' + companyInfo.value.name,
-          subject: 'New RFQ from ' + companyInfo.value.name,
-          html: renderToStaticMarkup(emailJson, { rootBlockId: 'root' }),
-          files: files,
-        }
-      });
+      // const { error } = await supabase.functions.invoke('send-email', {
+      //   body: {
+      //     // TODO: Get the email address from the user
+      //     toAddress: 'rodrigo@theoutdoorplus.com',
+      //     fromAddress: {
+      //       email: 'media@theoutdoorplus.com',
+      //       name: 'The Outdoor Plus Dealer Portal'
+      //     },
+      //     text: 'New Request for Quote from ' + companyInfo.value.name,
+      //     subject: 'New RFQ from ' + companyInfo.value.name,
+      //     html: renderToStaticMarkup(emailJson, { rootBlockId: 'root' }),
+      //     files: files,
+      //   }
+      // });
 
       if (error) throw error;
 
