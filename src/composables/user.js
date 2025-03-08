@@ -35,15 +35,17 @@ export function useUser() {
       }
       throw new Error('Invalid credentials');
     }
-    return { success: data?.success || false, first_time: data?.first_time || false };
+    return {
+      success: data?.success || false,
+      first_time: data?.first_time || false,
+      email_otp_active: data?.email_otp_active || false,
+      division_sent: data?.division_sent || false,
+    };
   };
 
-  const sendOtp = async (email) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: false,
-      },
+  const sendOtp = async (email, division) => {
+    const { error } = await supabase.functions.invoke('send-otp', {
+      body: { email, division },
     });
     if (error) {
       console.error('OTP error', error.message);
@@ -66,13 +68,14 @@ export function useUser() {
     return { user: data.user, session: data.session };
   };
 
-  const loadWelcomeEmail = async () => {
+  const loadWelcomeEmail = async (division) => {
     try {
       const { data, error } = await supabase
         .from('emails')
         .select('html, name, type, primary')
         .eq('type', 'Welcome Email')
         .eq('primary', true)
+        .eq('division', division)
         .single();
 
       if (error) throw error;

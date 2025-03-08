@@ -1,6 +1,7 @@
 <template>
   <div class="card flex flex-col items-center justify-center w-12/12 lg:w-6/12 mx-auto mt-40">
-    <img :src="logoUrl" class="w-11/12 lg:w-10/12 mb-16">
+    <img v-if="projectDivision === 'The Outdoor Plus'" :src="logoUrl" class="w-11/12 lg:w-10/12 mb-16">
+    <img v-if="projectDivision === 'Videl USA'" :src="logoUrlVidel" class="w-4/12 lg:w-5/12 mb-16">
 
     <!-- Password Reset Form -->
     <Form v-if="!isFirstTimeLogin" v-slot="$form" :resolver="resetResolver" @submit="onResetSubmit"
@@ -51,13 +52,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, inject, onBeforeUnmount, onBeforeMount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { supabase } from '@/supabase';
 import { useToast } from 'primevue/usetoast';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
 import logoUrl from '@/assets/top_logo.svg';
+import logoUrlVidel from '@/assets/videl_logo.png';
 import { useUserStore } from '@/store/user';
 import { useAppStore } from '@/store/app';
 
@@ -66,7 +68,7 @@ const router = useRouter();
 const toast = useToast();
 const userStore = useUserStore();
 const appStore = useAppStore();
-
+const projectDivision = inject('projectDivision');
 const isFirstTimeLogin = ref(false);
 const userEmail = ref('');
 
@@ -117,7 +119,7 @@ const passwordResolver = ref(zodResolver(
   })
 ));
 
-onMounted(() => {
+onMounted(async () => {
   // Check if this is a first-time login
   const firstTime = route.query.first_time === 'true';
   const email = route.query.email;
@@ -209,4 +211,20 @@ const onPasswordSubmit = async ({ valid, values }) => {
     }
   }
 };
+
+const beforeUnloudHandler = (event) => {
+  if (isFirstTimeLogin.value && userEmail.value) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', beforeUnloudHandler);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnloudHandler);
+});
+
 </script>

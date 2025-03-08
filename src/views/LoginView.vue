@@ -43,7 +43,7 @@
 </template>
 
 <script setup>
-import { ref, inject } from 'vue';
+import { ref, inject, onBeforeMount, onBeforeUnmount } from 'vue';
 import { supabase } from '@/supabase';
 import { useUserStore } from '@/store/user';
 import { useUser } from '@/composables/user';
@@ -123,19 +123,29 @@ const onFormSubmit = async ({ valid, values }) => {
         division_sent,
       } = await verifyCredentials(form.email, form.password, projectDivision);
 
+      areCredentialsValid.value = credentialsValid;
+
       if (credentialsValid) {
         const { data, error } = await supabase.auth.signInWithPassword(form);
         if (error) throw error;
+
         await userStore.sucessfullLogin(data.user, data.session);
         if (data.user.user_metadata.first_time && first_time) {
-          await supabase.auth.reauthenticate();
+          const { error } = await supabase.functions.invoke('reauthenticate', {
+            body: {
+              email: form.email,
+              division: projectDivision,
+            }
+          });
+          if (error) throw error;
           localStorage.setItem('reauthentication', Date.now());
           toast.add({ severity: 'success', summary: 'OTP Sent!', detail: 'Please check your email for the OTP for your password reset.', life: 5000 });
           router.push({ path: '/update-password', query: { email: form.email, first_time: true } });
         } else {
           if (data.user.user_metadata.email_otp_active && email_otp_active) {
-            await sendOtp(form.email);
+            await sendOtp(form.email, projectDivision);
             toast.add({ severity: 'success', summary: 'OTP Sent!', detail: 'Please check your email for the OTP', life: 5000 });
+            await supabase.auth.signOut();
             initialOtpValues.value.email = form.email;
             userEmail.value = form.email;
             isOtpSent.value = true;
@@ -168,6 +178,7 @@ const onOtpSubmit = async ({ valid, values }) => {
       const form = JSON.parse(JSON.stringify(values));
       const otpValid = await verifyOtp(form.email, form.otp);
       if (otpValid) {
+        isOtpSent.value = false;
         await userStore.sucessfullLogin(otpValid.user, otpValid.session);
         await userStore.loadUserCompany();
         toast.add({ severity: 'success', summary: 'Success', detail: 'Login successful', life: 5000 });
@@ -184,5 +195,20 @@ const onOtpSubmit = async ({ valid, values }) => {
     }
   }
 }
+
+const beforeUnloudHandler = (event) => {
+  if (isOtpSent.value) {
+    event.preventDefault();
+    event.returnValue = '';
+  }
+}
+
+onBeforeMount(() => {
+  window.addEventListener('beforeunload', beforeUnloudHandler);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', beforeUnloudHandler);
+});
 
 </script>
