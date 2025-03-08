@@ -56,8 +56,8 @@ export default [
         },
       },
       {
-        path: 'bbq-island',
-        name: 'BBQ Island Configurator',
+        path: 'custom-bbq-island',
+        name: 'Custom BBQ Island Configurator',
         component: () => import(/* webpackchunkName: "bbq-island" */ '@/views/BBQIslandView.vue'),
         meta: {
           requiresAuth: true,
@@ -80,8 +80,8 @@ export default [
         },
       },
       {
-        path: 'visual-bbq-island',
-        name: 'VIsual BBQ Island Configurator',
+        path: 'visual-custom-bbq-island',
+        name: 'Visual Custom BBQ Island Configurator',
         component: () => import(/* webpackchunkName: "bbq-island" */ '@/views/2DBBQIslandView.vue'),
         meta: {
           requiresAuth: true,
