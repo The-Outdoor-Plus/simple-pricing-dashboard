@@ -12,7 +12,7 @@
           <ul class="list-none p-2 m-0 overflow-x-hidden text-sm">
             <template v-for="(menuItem, index) in menuItems" :key="index">
               <li class="first:mt-0 mt-1" :class="{ 'mt-6': menuItem.children.length > 0 }"
-                v-if="menuItem.roles.includes(userStore.currentRole)">
+                v-if="menuItem.roles.includes(userStore.currentRole) && (menuItem.division.includes(division) || menuItem.division.includes('All'))">
                 <a v-if="!menuItem.children.length" @click="navigateTo(menuItem.path)" v-ripple
                   class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple">
                   <i :class="menuItem.icon" class="mr-2"></i>
@@ -32,7 +32,8 @@
                   </div>
                   <ul class="list-none p-0 m-0 overflow-hidden text-sm">
                     <template v-for="(item, index) in menuItem.children" :key="`${menuItem.name}-${index}`">
-                      <li v-if="item.roles.includes(userStore.currentRole)">
+                      <li
+                        v-if="item.roles.includes(userStore.currentRole) && (item.division.includes(division) || item.division.includes('All'))">
                         <a v-ripple
                           class="flex items-center cursor-pointer px-4 py-2 rounded hover:bg-surface-200 text-black duration-150 transition-colors p-ripple"
                           @click="navigateTo(item.path)">
@@ -94,7 +95,8 @@ const menuItems = ref([
     icon: 'pi pi-home',
     path: '/',
     children: [],
-    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR', 'TOP_SALES'],
+    division: ['The Outdoor Plus', 'Videl USA'],
   },
   {
     name: 'RFQs',
@@ -103,48 +105,64 @@ const menuItems = ref([
     children: [],
     // roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
     roles: ['ADMIN'],
+    division: ['The Outdoor Plus', 'Videl USA'],
   },
-  // {
-  //   name: 'Orders',
-  //   icon: 'pi pi-shopping-cart',
-  //   path: '/orders',
-  //   children: [],
-  //   roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
-  // },
+  {
+    name: 'Custom BBQ Island Configurator',
+    icon: 'pi pi-calculator',
+    path: '/visual-custom-bbq-island',
+    children: [],
+    roles: ['ADMIN', 'MANAGER', 'SALES', 'TOP_SALES'],
+    division: ['Videl USA'],
+  },
   {
     name: 'Fire Media Calculator',
     icon: 'pi pi-calculator',
     path: '/fire-media-calculator',
     children: [],
-    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR'],
+    roles: ['ADMIN', 'MANAGER', 'SALES', 'GROUP', 'LANDSCAPE', 'INTERNET', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR', 'TOP_SALES'],
+    division: ['The Outdoor Plus'],
+  },
+  {
+    name: 'Fire Media Calculator',
+    icon: 'pi pi-calculator',
+    path: '/fire-media-calculator',
+    children: [],
+    roles: ['ADMIN', 'MANAGER', 'TOP_SALES'],
+    division: ['Videl USA'],
   },
   {
     name: 'Admin Menu',
     roles: ['ADMIN', 'MANAGER'],
+    division: ['All'],
     children: [
       {
         name: 'Users',
         icon: 'pi pi-users',
         path: '/users',
         roles: ['ADMIN', 'MANAGER'],
+        division: ['All'],
       },
       {
         name: 'Companies',
         icon: 'pi pi-building',
         path: '/companies',
         roles: ['ADMIN', 'MANAGER'],
+        division: ['All'],
       },
       {
         name: 'Emails',
         icon: 'pi pi-envelope',
         path: '/emails',
         roles: ['ADMIN', 'MANAGER'],
+        division: ['All'],
       },
       {
         name: 'Price Tiers',
         icon: 'pi pi-tag',
         path: '/price-tiers',
         roles: ['ADMIN', 'MANAGER'],
+        division: ['All'],
       },
     ],
   },
