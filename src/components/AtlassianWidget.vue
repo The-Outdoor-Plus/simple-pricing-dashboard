@@ -15,14 +15,6 @@ const router = useRouter();
 const isAuthenticated = ref(userStore.isUserAuthenticated);
 const observer = ref(null);
 
-// Watch for authentication changes
-watch(() => userStore.isUserAuthenticated, (newValue) => {
-  if (!newValue) {
-    // Remove the widget when user logs out
-    cleanupWidget();
-  }
-}, { immediate: true });
-
 
 const setNativeValue = (element, value) => {
   const previousValue = element.value;
@@ -127,6 +119,14 @@ onBeforeUnmount(() => {
 onUnmounted(() => {
   cleanupWidget();
 });
+
+// Watch for authentication changes
+watch(() => userStore.isUserAuthenticated, (newValue) => {
+  if (!newValue) {
+    // Remove the widget when user logs out
+    cleanupWidget();
+  }
+}, { immediate: true });
 </script>
 
 <style scoped>
