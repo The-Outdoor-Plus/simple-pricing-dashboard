@@ -330,5 +330,13 @@ const getCanvasLength = computed(() => {
     </div>
 
     <div class="mt-2 text-sm text-gray-600">Scale: {{ islandLength }}" total length</div>
+
+    <p class="mt-3 italic w-full md:w-8/12 justify-center items-center mx-auto text-center disclaimer">
+      <span class="font-bold text-red-600">Disclaimer:</span> The visual representation provided in this configurator is
+      for illustrative purposes only and may not accurately reflect the final product. Our company reserves the right
+      to modify the design and visual elements in the final render to align with product specifications and island
+      requirements. Additionally, the pricing shown serves as an estimate and is subject to change based on final
+      specifications, material availability, and other factors.
+    </p>
   </div>
 </template>
