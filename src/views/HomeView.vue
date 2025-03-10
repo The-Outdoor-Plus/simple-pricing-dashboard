@@ -50,7 +50,7 @@
     <CompanyProductBreakdown v-if="selectedProduct && selectedProduct.product && !userStore?.isSales" />
     <SalesProductBreakdown v-if="selectedProduct && selectedProduct.product && userStore?.isSales" />
 
-    <ProductSpecificationSheets />
+    <ProductSpecificationSheets :key="selectedProduct?.product" />
     <ProductVariationsTable />
   </div>
 </template>

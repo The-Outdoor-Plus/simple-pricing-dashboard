@@ -148,46 +148,67 @@
               <IslandPreview :islandLength="islandLength" :placedAppliances="placedAppliances"
                 :top-color="getSelectedTopStyleColor" :bottom-color="getSelectedBottomStyleColor"
                 @remove="removeAppliance" @drop="handleDrop" @update-position="updateAppliancePosition"
-                @swap-appliances="swapAppliances" />
+                @swap-appliances="swapAppliances" class="island-preview-container" />
               <AddOnsList :addOns="addOns" :selectedAddOns="selectedAddOns"
                 @update-selected-add-ons="updateSelectedAddOns" />
             </div>
             <!-- Order Summary -->
             <div v-show="Number(currentStep) > 4"
-              class="w-full mt-8 py-6 px-4 lg:p-6 border rounded-lg bg-white shadow-md">
-              <div class="w-full flex mb-4">
-                <h3 class="w-6/12 lg:w-7/12 text-xl font-semibold mb-4 pr-3 lg:pr-0">Order Summary</h3>
-                <h3 class="w-6/12 lg:w-5/12 text-xl font-semibold mb-4 text-right px-3">Cost</h3>
+              class="w-full mt-8 py-6 px-4 lg:p-6 border rounded-lg bg-white shadow-md quote-summary">
+              <div class="w-full flex mb-4 justify-between items-center">
+                <h3 class="w-6/12 lg:w-7/12 text-xl font-semibold mb-0 pr-3 lg:pr-0">Quote Summary</h3>
+                <div class="flex items-center gap-4">
+                  <h3 class="text-xl font-semibold mb-0 text-right">Cost</h3>
+                  <Button type="button" icon="pi pi-file-pdf" label="Download PDF" severity="secondary"
+                    @click="handleDownloadPdf" />
+                </div>
               </div>
               <Divider />
               <div class="w-full flex flex-col gap-3 text-lg">
                 <div v-if="selectedShape" class="w-full flex justify-between">
                   <div class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">
-                    <span>{{ (length / 12).toFixed(2) }} ft ({{ length }}") Linear Island</span>
-                    <br />
-                    <span>Top Color: {{ getSelectedTopStyleColor?.name }}</span>
-                    <br />
-                    <span>Bottom Color: {{ getSelectedBottomStyleColor?.name }}</span>
-                    <br />
+                    <span class="font-bold">{{ (length / 12).toFixed(2) }} ft ({{ length }}") Linear Island</span>
+                    <br><br>
+                    <span class="font-semibold">Top Color: {{ getSelectedTopStyleColor?.name }}</span>
+                    <br>
+                    <span class="font-semibold">Bottom Color: {{ getSelectedBottomStyleColor?.name }}</span>
+                    <br>
                     <span class="text-sm">{{ length }}"(L) &times; 30"(D) &times; 36"(H)</span>
+                    <br>
+                    <span class="text-sm">
+                      {{ formatPrice(235) }} &times; {{ (length /
+                        12).toFixed(2) }} ft
+                    </span>
                   </div>
                   <span class="w-6/12 lg:w-5/12 text-right font-medium px-3">{{
                     formatPrice(basePrice)
-                    }}</span>
+                  }}</span>
                 </div>
 
                 <div v-if="selectedTopStyle && topStylePrice > 0" class="flex justify-between">
-                  <span class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">{{ getSelectedTopStyle?.name }}</span>
+                  <div class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">
+                    <span class="font-semibold">{{ getSelectedTopStyle?.name }}</span>
+                    <br />
+                    <span class="text-sm">
+                      {{ formatPrice(getSelectedTopStyle?.price) }} &times; {{ (length /
+                        12).toFixed(2) }} ft
+                    </span>
+                  </div>
                   <span class="w-6/12 lg:w-5/12 text-right font-medium px-3">+{{ formatPrice(topStylePrice) }}</span>
                 </div>
+
+                <div class="text-sm italic">VG-CUSTOM</div>
 
                 <template v-if="selectedAccessoriesList.length > 0">
                   <Divider />
                   <h4 class="font-medium">Selected Accessories:</h4>
                   <div v-for="accessory in selectedAccessoriesList" :key="accessory.id" class="flex justify-between">
-                    <span class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">{{ accessory.name }}</span>
+                    <div class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">
+                      <span class="font-semibold">{{ accessory.name }}</span> <br>
+                      <span class="text-gray-700 italic text-sm"> {{ accessory.sku }}</span>
+                    </div>
                     <span class="w-6/12 lg:w-5/12 text-right font-medium px-3">+{{ formatPrice(accessory.price)
-                      }}</span>
+                    }}</span>
                   </div>
                 </template>
 
@@ -195,9 +216,12 @@
                   <Divider />
                   <h4 class="font-medium">Selected Appliances:</h4>
                   <div v-for="appliance in selectedAppliancesList" :key="appliance.id" class="flex justify-between">
-                    <span class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">{{ appliance.name }}</span>
+                    <div class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">
+                      <span class="font-semibold">{{ appliance.name }}</span> <br>
+                      <span class="text-gray-700 italic text-sm"> {{ appliance.sku }}</span>
+                    </div>
                     <span class="w-6/12 lg:w-5/12 text-right font-medium px-3">+{{ formatPrice(appliance.price)
-                      }}</span>
+                    }}</span>
                   </div>
                 </template>
 
@@ -205,21 +229,22 @@
                   <Divider />
                   <h4 class="font-medium">Selected Add-Ons:</h4>
                   <div v-for="addOn in selectedAddOns" :key="addOn.id" class="flex justify-between">
-                    <span class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">
-                      {{ addOn.name }} <span class="text-gray-500">× {{ addOn.quantity }}</span>
-                    </span>
+                    <div class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">
+                      <span class="font-bold">{{ addOn.name }}</span> <span class="text-gray-500">× {{ addOn.quantity
+                        }}</span>
+                    </div>
                     <span class="w-6/12 lg:w-5/12 text-right font-medium px-3">+{{ formatPrice(addOn.price *
                       addOn.quantity)
-                      }}</span>
+                    }}</span>
                   </div>
                 </template>
 
                 <Divider />
                 <div class="flex justify-between text-xl font-bold">
-                  <span class="w-6/12 lg:w-7/12 pr-3 lg:pr-0">Total Price</span>
+                  <span class="w-6/12 lg:w-7/12 pr-3 lg:pr-0 font-bold">Total Price</span>
                   <span class="w-6/12 lg:w-5/12 text-right font-medium px-3">{{
                     formatPrice(totalPrice)
-                    }}</span>
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -250,8 +275,10 @@ import { useRouter } from 'vue-router';
 import ApplianceList from '@/components/ApplianceList.vue';
 import IslandPreview from '@/components/IslandPreview.vue';
 import AddOnsList from '@/components/AddOnsList.vue';
+import { useBbqIslandPdf } from '@/composables/bbqIslandPdf';
 
 const router = useRouter();
+const { downloadBbqIslandPdf } = useBbqIslandPdf();
 
 // Variables for auto-scroll during drag
 const autoScrollThreshold = 100; // pixels from edge to trigger scroll
@@ -533,6 +560,7 @@ const accessories = ref([
     width: 18,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-18SD',
   },
   {
     id: 'multi-function-door',
@@ -543,6 +571,7 @@ const accessories = ref([
     width: 16.5,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-MFD',
   },
   {
     id: 'triple-access-door',
@@ -553,6 +582,7 @@ const accessories = ref([
     width: 13,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-3D',
   },
   {
     id: '33-combo-door-drawer',
@@ -563,6 +593,7 @@ const accessories = ref([
     width: 33,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-36DC',
   },
   {
     id: '30-double-door',
@@ -573,6 +604,7 @@ const accessories = ref([
     width: 30,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-30DD',
   },
   {
     id: '36-double-door',
@@ -583,6 +615,7 @@ const accessories = ref([
     width: 36,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-36DD',
   },
   {
     id: '42-double-door',
@@ -593,6 +626,7 @@ const accessories = ref([
     width: 42,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-42DD',
   },
   {
     id: '4.5cu-ft-fridge',
@@ -603,6 +637,7 @@ const accessories = ref([
     width: 20.5,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-R20',
   },
   {
     id: 'stainless-steel-outdoor-fridge',
@@ -613,6 +648,7 @@ const accessories = ref([
     width: 23.375,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-R32FRG',
   },
   {
     id: 'spice-rack',
@@ -623,6 +659,7 @@ const accessories = ref([
     width: 10.875,
     gap: 3,
     section: 'bottom',
+    sku: 'DG-11SR',
   },
 ]);
 
@@ -637,6 +674,7 @@ const mainAppliances = ref([
     price: 1595,
     width: 36,
     gap: 3,
+    sku: 'DG-4B36',
   },
   {
     id: '42-grill',
@@ -647,6 +685,7 @@ const mainAppliances = ref([
     price: 2150,
     width: 42,
     gap: 3,
+    sku: 'DG-5B42',
   },
   {
     id: '36-commercial-grill',
@@ -657,6 +696,7 @@ const mainAppliances = ref([
     price: 1995,
     width: 36,
     gap: 3,
+    sku: 'DG-3B36',
   },
   {
     id: 'griddle',
@@ -667,6 +707,7 @@ const mainAppliances = ref([
     price: 1599,
     width: 30,
     gap: 3,
+    sku: 'DG-G30',
   },
   {
     id: 'side-burner',
@@ -677,6 +718,7 @@ const mainAppliances = ref([
     price: 735,
     width: 13,
     gap: 3,
+    sku: 'VD-DSB',
   },
   {
     id: 'power-burner',
@@ -687,6 +729,7 @@ const mainAppliances = ref([
     price: 1095,
     width: 19.5,
     gap: 3,
+    sku: 'DG-20PB',
   },
   {
     id: 'food-warmer',
@@ -697,6 +740,7 @@ const mainAppliances = ref([
     price: 690,
     width: 13.875,
     gap: 3,
+    sku: 'DG-13FW',
   },
   {
     id: 'griddle-oven',
@@ -707,6 +751,7 @@ const mainAppliances = ref([
     price: 3195,
     width: 30,
     gap: 3,
+    sku: 'VD-DR30',
   },
   {
     id: 'margarita-center',
@@ -717,6 +762,7 @@ const mainAppliances = ref([
     price: 575,
     width: 20.375,
     gap: 3,
+    sku: 'DG-20MC',
   },
   {
     id: 'sink',
@@ -727,6 +773,7 @@ const mainAppliances = ref([
     price: 375,
     width: 17.75,
     gap: 3,
+    sku: 'DG-20SINK'
   },
   {
     id: 'standard-trash-chute',
@@ -737,6 +784,7 @@ const mainAppliances = ref([
     price: 325,
     width: 18.625,
     gap: 3,
+    sku: 'DG-12TCHE'
   },
 ]);
 
@@ -1061,6 +1109,24 @@ const swapAppliances = (draggedIndex, targetIndex) => {
 // Add method to handle add-on updates
 const updateSelectedAddOns = (addOns) => {
   selectedAddOns.value = addOns;
+};
+
+// Method to handle PDF download
+const handleDownloadPdf = async () => {
+  // Get the disclaimer text from the IslandPreview component
+  const disclaimerElement = document.querySelector('.island-preview-container .disclaimer');
+  const disclaimerText = disclaimerElement ? disclaimerElement.textContent : '';
+
+  // Generate a filename based on the customer's configuration
+  const filename = `BBQ-Island-${selectedShape.value}-${length.value}in`;
+
+  // Download the PDF
+  await downloadBbqIslandPdf({
+    quoteSummarySelector: '.quote-summary',
+    islandPreviewSelector: '.island-preview-container',
+    disclaimerText,
+    filename,
+  });
 };
 </script>
 
