@@ -38,7 +38,7 @@
           }}
         </span>
         <Select v-model="selectedMaterial" name="material" :options="materialAttributes" option-label="attribute_option"
-          placeholder="Select a material" fluid class="w-full"></Select>
+          placeholder="Select a material" fluid class="w-full" :disabled="materialAttributes.length < 2"></Select>
       </div>
       <template v-for="(attributeType, key) in allAttributes" :key="key">
         <div v-if="attributeType && attributeType.length" class="w-full flex flex-col">

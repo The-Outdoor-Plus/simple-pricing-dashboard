@@ -30,7 +30,7 @@
     <div v-if="showProductVariationsTable" class="flex flex-col gap-2">
       <label class="text-sm font-semibold italic">Select Material</label>
       <Select v-model="selectedMaterialVariation" :options="variationsMaterialOptions" optionLabel="label"
-        optionValue="value" class="w-1/3 mb-4" />
+        optionValue="value" :disabled="variationsMaterialOptions.length < 2" class="w-1/3 mb-4" />
     </div>
     <DataTable
       v-if="showProductVariationsTable && productVariations[selectedMaterialVariation]?.combinations.length > 0 && calculateItemSize"
