@@ -124,6 +124,14 @@ const menuItems = ref([
     division: ['The Outdoor Plus'],
   },
   {
+    name: 'Fire Media Calculator',
+    icon: 'pi pi-calculator',
+    path: '/fire-media-calculator',
+    children: [],
+    roles: ['ADMIN', 'MANAGER', 'TOP_SALES'],
+    division: ['Videl USA'],
+  },
+  {
     name: 'Admin Menu',
     roles: ['ADMIN', 'MANAGER'],
     division: ['All'],
