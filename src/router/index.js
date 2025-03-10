@@ -18,6 +18,11 @@ router.beforeEach((to, from, next) => {
   const loggedIn = userStore.isUserAuthenticated;
   const isFirstTime = userStore.isFirstTime;
 
+  // Skip authorization check for the not-authorized page itself
+  if (to.path === '/not-authorized') {
+    return next();
+  }
+
   const reauthenticationTime = localStorage.getItem('reauthentication');
   if (reauthenticationTime && loggedIn) {
     const elapsedTimeInSeconds = Math.floor((Date.now() - reauthenticationTime) / 1000);
@@ -67,7 +72,14 @@ router.beforeEach((to, from, next) => {
   }
 
   if (loggedIn && !allowedRoles.includes(currentUser?.user_metadata?.role || '')) {
-    return next('/');
+    // Redirect to not-authorized page instead of login
+    return next({
+      path: '/not-authorized',
+      query: {
+        from: to.fullPath,
+        role: currentUser?.user_metadata?.role || 'unknown',
+      },
+    });
   }
 
   next();
