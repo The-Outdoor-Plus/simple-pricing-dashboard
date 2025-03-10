@@ -38,13 +38,14 @@
             @click="form.company = null"></i>
         </div>
         <span v-if="form?.company?.name" class="text-sm font-bold italic">Selected: {{ form?.company?.name
-          }}</span>
+        }}</span>
         <Message v-if="$form.company?.invalid" severity="error" size="small" variant="simple">{{
           $form.company.error?.message }}</Message>
       </div>
       <div class="mb-4">
         <label for="role" class="block mb-1">Role</label>
-        <Select id="role" v-model="form.role" :options="roles" placeholder="Select a Role" fluid required></Select>
+        <Select id="role" v-model="form.role" :options="roles" placeholder="Select a Role" fluid required
+          option-label="value" option-value="value"></Select>
         <Message v-if="$form.role?.invalid" severity="error" size="small" variant="simple">{{
           $form.role.error?.message }}</Message>
       </div>
@@ -107,12 +108,13 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useToast } from 'primevue/usetoast';
 import { supabase } from '@/supabase';
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { z } from 'zod';
 import { useUser } from '@/composables/user';
+import { useAppStore } from '@/store/app';
 
 const props = defineProps({
   user: {
@@ -129,9 +131,13 @@ const props = defineProps({
   },
 });
 
+const appStore = useAppStore();
 const emit = defineEmits(['saved', 'cancel']);
 const toast = useToast();
-const roles = ref(['ADMIN', 'SALES', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR', 'INTERNET', 'LANDSCAPE', 'GROUP'])
+// const roles = ref(['ADMIN', 'SALES', 'DEALER', 'DISTRIBUTOR', 'MASTER_DISTRIBUTOR', 'INTERNET', 'LANDSCAPE', 'GROUP'])
+const roles = computed(() => {
+  return appStore.getEnumsByType('user_role');
+});
 const eventQuery = ref('');
 const filteredCompanies = ref([]);
 const localCompaniesList = ref([]);
